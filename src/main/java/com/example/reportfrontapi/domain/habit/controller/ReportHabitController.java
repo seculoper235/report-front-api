@@ -3,6 +3,7 @@ package com.example.reportfrontapi.domain.habit.controller;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitRequest;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitResponse;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class ReportHabitController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReportHabitResponse create(@RequestBody ReportHabitRequest request) {
+    public ReportHabitResponse create(@Valid @RequestBody ReportHabitRequest request) {
         return reportHabitService.create(request);
     }
 
@@ -32,7 +33,7 @@ public class ReportHabitController {
     }
 
     @PutMapping("/{id}")
-    public ReportHabitResponse update(@PathVariable Long id, @RequestBody ReportHabitRequest request) {
+    public ReportHabitResponse update(@PathVariable Long id, @Valid @RequestBody ReportHabitRequest request) {
         return reportHabitService.update(id, request);
     }
 
