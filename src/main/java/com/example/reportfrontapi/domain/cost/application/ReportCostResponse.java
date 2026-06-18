@@ -17,7 +17,7 @@ public record ReportCostResponse(
         PaymentMethod paymentMethod, // 지출 수단
         LocalDateTime paymentAt,     // 지출 일시
         CostDivision costDivision,   // 소비 유형
-        Integer costPoint            // 소비 포인트(유형에 따른 부호 적용)
+        Integer costPoint            // 소비 포인트(부호 없는 원본 값)
 ) {
     public static ReportCostResponse from(ReportCost cost) {
         return new ReportCostResponse(

@@ -1,14 +1,18 @@
 package com.example.reportfrontapi.domain.habit.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
+import com.example.reportfrontapi.domain.habit.application.DailyHabitResponse;
+import com.example.reportfrontapi.domain.habit.application.MonthlyHabitResponse;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitRequest;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitResponse;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -26,6 +30,17 @@ public class ReportHabitController {
     @GetMapping
     public ApiResponse<List<ReportHabitResponse>> findAll() {
         return ApiResponse.success(reportHabitService.findAll());
+    }
+
+    @GetMapping("/month")
+    public ApiResponse<MonthlyHabitResponse> findByMonth(@RequestParam int year, @RequestParam int month) {
+        return ApiResponse.success(reportHabitService.findByMonth(year, month));
+    }
+
+    @GetMapping("/daily")
+    public ApiResponse<DailyHabitResponse> findByDate(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ApiResponse.success(reportHabitService.findByDate(date));
     }
 
     @GetMapping("/{id}")

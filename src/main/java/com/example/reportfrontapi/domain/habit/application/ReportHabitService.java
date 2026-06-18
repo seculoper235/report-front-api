@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.habit.application;
 
+import com.example.reportfrontapi.domain.habit.HabitDivision;
 import com.example.reportfrontapi.domain.habit.ReportHabit;
 import com.example.reportfrontapi.domain.habit.repository.ReportHabitRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -7,7 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +36,63 @@ public class ReportHabitService {
         return reportHabitRepository.findAll().stream()
                 .map(ReportHabitResponse::from)
                 .toList();
+    }
+
+    public MonthlyHabitResponse findByMonth(int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        List<ReportHabit> habits =
+                reportHabitRepository.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end);
+
+        // 일자별 그룹핑(달력 순서 유지를 위해 TreeMap)
+        Map<LocalDate, List<ReportHabit>> byDate = habits.stream()
+                .collect(Collectors.groupingBy(
+                        habit -> habit.getCreatedAt().toLocalDate(),
+                        TreeMap::new,
+                        Collectors.toList()));
+
+        List<MonthlyHabitResponse.DailySummary> daily = byDate.entrySet().stream()
+                .map(entry -> new MonthlyHabitResponse.DailySummary(
+                        entry.getKey(),
+                        sumPoints(entry.getValue(), HabitDivision.GOOD),
+                        sumPoints(entry.getValue(), HabitDivision.BAD)))
+                .toList();
+
+        MonthlyHabitResponse.MonthlySummary monthly = new MonthlyHabitResponse.MonthlySummary(
+                year,
+                month,
+                sumPoints(habits, HabitDivision.GOOD),
+                sumPoints(habits, HabitDivision.BAD));
+
+        return new MonthlyHabitResponse(daily, monthly);
+    }
+
+    public DailyHabitResponse findByDate(LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
+
+        List<ReportHabit> habits =
+                reportHabitRepository.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end);
+
+        List<ReportHabitResponse> habitResponses = habits.stream()
+                .map(ReportHabitResponse::from)
+                .toList();
+
+        return new DailyHabitResponse(
+                date,
+                habitResponses,
+                sumPoints(habits, HabitDivision.GOOD),
+                sumPoints(habits, HabitDivision.BAD));
+    }
+
+    // 지정 division의 habitPoint 합산. getHabitPoint()는 부호 없는 원본 포인트(null이면 0)를 반환한다.
+    private int sumPoints(List<ReportHabit> habits, HabitDivision division) {
+        return habits.stream()
+                .filter(habit -> habit.getHabitDivision() == division)
+                .mapToInt(ReportHabit::getHabitPoint)
+                .sum();
     }
 
     public ReportHabitResponse findById(Long id) {

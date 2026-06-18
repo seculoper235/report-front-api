@@ -51,7 +51,14 @@ public class ReportCost extends BaseEntity {
 
     public Integer getCostPoint() {
         if (costDivision == null || costPoint == null) {
-            return null;
+            return 0;
+        }
+        return costPoint;
+    }
+
+    public Integer getNormalCostPoint() {
+        if (costDivision == null || costPoint == null) {
+            return 0;
         }
         return CostDivision.GOOD.equals(costDivision) ? costPoint : costPoint * -1;
     }
