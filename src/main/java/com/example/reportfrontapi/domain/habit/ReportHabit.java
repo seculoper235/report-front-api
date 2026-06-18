@@ -39,4 +39,10 @@ public class ReportHabit extends BaseEntity {
         }
         return HabitDivision.GOOD.equals(habitDivision) ? habitPoint : habitPoint * -1;
     }
+
+    public void update(String habitName, HabitDivision habitDivision, Integer habitPoint) {
+        this.habitName = habitName;
+        this.habitDivision = habitDivision;
+        this.habitPoint = habitPoint;
+    }
 }

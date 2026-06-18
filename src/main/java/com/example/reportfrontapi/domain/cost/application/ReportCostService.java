@@ -1,10 +1,12 @@
 package com.example.reportfrontapi.domain.cost.application;
 
+import com.example.reportfrontapi.common.response.PageResponse;
 import com.example.reportfrontapi.domain.cost.CostDivision;
 import com.example.reportfrontapi.domain.cost.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +46,25 @@ public class ReportCostService {
         return reportCostRepository.findByCategoryName(category).stream()
                 .map(ReportCostResponse::from)
                 .toList();
+    }
+
+    // 소비 내역 무한 스크롤 조회. division/기간은 옵션, 정렬은 pageable로 받는다.
+    public PageResponse<ReportCostResponse> search(CostDivision division,
+                                                   LocalDate startDate,
+                                                   LocalDate endDate,
+                                                   Pageable pageable) {
+        // 기간은 [startDate 00:00, endDate+1 00:00) 으로 끝 날짜를 포함하도록 처리.
+        LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime end = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
+
+        return PageResponse.from(
+                reportCostRepository.search(division, start, end, pageable)
+                        .map(ReportCostResponse::from));
+    }
+
+    // 전체 순포인트 합계(GOOD +, BAD -). 메인 화면 헤더에 표시.
+    public int getTotalPoint() {
+        return reportCostRepository.sumNetPoint();
     }
 
     // /calendar : 일별/월별 GOOD/BAD costPoint 합산 (habit의 month와 동일 구조)
@@ -120,7 +141,7 @@ public class ReportCostService {
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
 
-        return reportCostRepository.findByPaymentAtGreaterThanEqualAndPaymentAtLessThan(start, end);
+        return reportCostRepository.findByPaymentAtRange(start, end);
     }
 
     // 지정 division의 costPoint 합산. getCostPoint()는 부호 없는 원본 포인트(null이면 0)를 반환한다.

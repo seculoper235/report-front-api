@@ -44,7 +44,7 @@ public class ReportHabitService {
         LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
 
         List<ReportHabit> habits =
-                reportHabitRepository.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end);
+                reportHabitRepository.findByCreatedAtRange(start, end);
 
         // 일자별 그룹핑(달력 순서 유지를 위해 TreeMap)
         Map<LocalDate, List<ReportHabit>> byDate = habits.stream()
@@ -74,7 +74,7 @@ public class ReportHabitService {
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         List<ReportHabit> habits =
-                reportHabitRepository.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end);
+                reportHabitRepository.findByCreatedAtRange(start, end);
 
         List<ReportHabitResponse> habitResponses = habits.stream()
                 .map(ReportHabitResponse::from)
@@ -102,9 +102,11 @@ public class ReportHabitService {
     @Transactional
     public ReportHabitResponse update(Long id, ReportHabitRequest request) {
         ReportHabit habit = getOrThrow(id);
-        habit.setHabitName(request.habitName());
-        habit.setHabitDivision(request.habitDivision());
-        habit.setHabitPoint(request.habitPoint());
+        habit.update(
+                request.habitName(),
+                request.habitDivision(),
+                request.habitPoint()
+        );
 
         return ReportHabitResponse.from(habit);
     }
