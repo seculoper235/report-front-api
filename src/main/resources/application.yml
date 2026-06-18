@@ -23,7 +23,7 @@ spring:
   datasource:
     hikari:
       driver-class-name: org.postgresql.Driver
-      jdbc-url: jdbc:postgresql://localhost:5432/daliy?characterEncoding=utf-8
+      jdbc-url: jdbc:postgresql://localhost:5432/daily?characterEncoding=utf-8
       username: devteller
       password: devteller123!
 
@@ -39,6 +39,11 @@ spring:
         format_sql: true
   liquibase:
     change-log: db/changelog.yaml
+
+  # Docker Compose 설정 (compose 파일을 docker/ 하위로 이동)
+  docker:
+    compose:
+      file: docker/docker-compose.yml
 
   # Security OAuth
 #  security:
