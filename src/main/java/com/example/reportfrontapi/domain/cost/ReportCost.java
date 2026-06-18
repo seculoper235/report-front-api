@@ -50,6 +50,23 @@ public class ReportCost extends BaseEntity {
     private Integer costPoint;    // 소비 포인트
 
     public Integer getCostPoint() {
+        if (costDivision == null || costPoint == null) {
+            return null;
+        }
         return CostDivision.GOOD.equals(costDivision) ? costPoint : costPoint * -1;
+    }
+
+    public void update(String categoryName, String costName, Yn fixedYn, String costDescription,
+                       Long costAmount, PaymentMethod paymentMethod, LocalDateTime paymentAt,
+                       CostDivision costDivision, Integer costPoint) {
+        this.categoryName = categoryName;
+        this.costName = costName;
+        this.fixedYn = fixedYn;
+        this.costDescription = costDescription;
+        this.costAmount = costAmount;
+        this.paymentMethod = paymentMethod;
+        this.paymentAt = paymentAt;
+        this.costDivision = costDivision;
+        this.costPoint = costPoint;
     }
 }

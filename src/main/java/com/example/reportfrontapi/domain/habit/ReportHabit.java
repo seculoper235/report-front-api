@@ -27,6 +27,9 @@ public class ReportHabit extends BaseEntity {
     private Integer habitPoint;    // 습관 포인트
 
     public Integer getHabitPoint() {
+        if (habitDivision == null || habitPoint == null) {
+            return null;
+        }
         return HabitDivision.GOOD.equals(habitDivision) ? habitPoint : habitPoint * -1;
     }
 }
