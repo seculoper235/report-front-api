@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.habit;
 
+import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ReportHabit {
+public class ReportHabit extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "report_habt_id", nullable = false)
@@ -18,10 +19,11 @@ public class ReportHabit {
     @Column(name = "habt_nm", nullable = false)
     private String habitName;    // 습관 이름
 
-    @Column(name = "cost_mtd")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "habt_dvsn")
     private HabitDivision habitDivision;    // 습관 유형
 
-    @Column(name = "cost_amt")
+    @Column(name = "habt_pnt")
     private Integer habitPoint;    // 습관 포인트
 
     public Integer getHabitPoint() {

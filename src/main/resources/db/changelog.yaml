@@ -1,0 +1,128 @@
+databaseChangeLog:
+  - property:
+      dbms: postgresql, h2
+      name: function.now
+      value: now()
+  - objectQuotingStrategy: QUOTE_ALL_OBJECTS
+  - changeSet:
+      id: create-cost
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: rpt_cost
+            columns:
+              - column:
+                  name: rpt_cost_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: cat_nm
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fixed_yn
+                  type: varchar(1)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost_nm
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost_desc
+                  type: varchar(255)
+              - column:
+                  name: cost_amt
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost_mtd
+                  type: varchar(8)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pay_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost_dvsn
+                  type: varchar(8)
+              - column:
+                  name: cost_pnt
+                  type: int
+              - column:
+                  name: crt_at
+                  type: datetime
+                  defaultValue: ${function.now}
+                  constraints:
+                    nullable: false
+              - column:
+                  name: crt_by
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: udt_at
+                  type: datetime
+                  defaultValue: ${function.now}
+                  constraints:
+                    nullable: false
+              - column:
+                  name: udt_by
+                  type: bigint
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: create-habit
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: rpt_habit
+            columns:
+              - column:
+                  name: report_habt_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: habt_nm
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: habt_dvsn
+                  type: varchar(20)
+              - column:
+                  name: habt_pnt
+                  type: int
+              - column:
+                  name: crt_at
+                  type: datetime
+                  defaultValue: ${function.now}
+                  constraints:
+                    nullable: false
+              - column:
+                  name: crt_by
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: udt_at
+                  type: datetime
+                  defaultValue: ${function.now}
+                  constraints:
+                    nullable: false
+              - column:
+                  name: udt_by
+                  type: bigint
+                  constraints:
+                    nullable: false

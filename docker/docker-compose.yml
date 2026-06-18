@@ -1,0 +1,10 @@
+name: daily-compose
+services:
+  daily-db:
+    image: postgres:15.4
+    environment:
+      POSTGRES_DB: daily
+      POSTGRES_USER: devteller
+      POSTGRES_PASSWORD: devteller123!
+    ports:
+      - "5432:5432"

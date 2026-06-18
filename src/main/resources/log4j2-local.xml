@@ -1,0 +1,45 @@
+<Configuration status="INFO">
+    <!--속성 변수-->
+    <Properties>
+        <Property name="LOG_PATH">logs</Property>
+        <Property name="DEFAULT_PATTERN">[%d{yyyy-MM-dd HH:mm:ss.SSS}] %5p ${sys:PID} --- [%15.15t] %-40.40c{1.} : %m%n%xwEx</Property>
+        <Property name="COLOR_PATTERN">[%clr{%d{yyyy-MM-dd HH:mm:ss.SSS}}{faint}] %clr{%5p} %clr{${sys:PID}}{magenta} %clr{---}{faint} %clr{[%15.15t]}{faint} %clr{%-40.40c}{cyan} %clr{:}{faint} %m%n%xwEx</Property>
+    </Properties>
+
+    <Appenders>
+        <!--기본 출력 설정-->
+        <Console name="INFO_LOG" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${COLOR_PATTERN}"/>
+        </Console>
+
+        <!--파일 정책 설정(매일 50MB 단위)-->
+        <RollingFile name ="FILE">
+            <FileName>${LOG_PATH}/localhost-notice.log</FileName>
+            <FilePattern>${LOG_PATH}/localhost-notice.%d{yyyy-MM-dd}.%i.log</FilePattern>
+            <PatternLayout>
+                <Pattern>${DEFAULT_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50MB"/>
+                <TimeBasedTriggeringPolicy interval = "1" modulate = "true"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!--기본 로깅 설정(INFO 레벨)-->
+        <Root level="INFO">
+            <AppenderRef ref="INFO_LOG"/>
+            <AppenderRef ref="FILE"/>
+        </Root>
+
+        <!--Spring 로깅 설정-->
+        <Logger name="org.springframework" level="INFO">
+            <AppenderRef ref="INFO_LOG"/>
+            <AppenderRef ref="FILE"/>
+        </Logger>
+
+        <!-- SQL 로깅 설정-->
+<!--        <Logger name="Exposed" level="DEBUG"/>-->
+    </Loggers>
+</Configuration>
