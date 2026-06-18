@@ -1,9 +1,8 @@
 package com.example.reportfrontapi.domain.cost;
 
+import com.example.reportfrontapi.common.code.CodeEnum;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-
-import java.util.Arrays;
 
 @Converter(autoApply = true)
 public class PaymentMethodConverter implements AttributeConverter<PaymentMethod, String> {
@@ -18,9 +17,6 @@ public class PaymentMethodConverter implements AttributeConverter<PaymentMethod,
         if (dbData == null) {
             return null;
         }
-        return Arrays.stream(PaymentMethod.values())
-                .filter(method -> method.getCode().equals(dbData))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown payment method code: " + dbData));
+        return CodeEnum.fromCode(PaymentMethod.class, dbData);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.habit.controller;
 
+import com.example.reportfrontapi.common.response.ApiResponse;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitRequest;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitResponse;
 import com.example.reportfrontapi.domain.habit.application.ReportHabitService;
@@ -18,28 +19,28 @@ public class ReportHabitController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReportHabitResponse create(@Valid @RequestBody ReportHabitRequest request) {
-        return reportHabitService.create(request);
+    public ApiResponse<ReportHabitResponse> create(@Valid @RequestBody ReportHabitRequest request) {
+        return ApiResponse.success(reportHabitService.create(request));
     }
 
     @GetMapping
-    public List<ReportHabitResponse> findAll() {
-        return reportHabitService.findAll();
+    public ApiResponse<List<ReportHabitResponse>> findAll() {
+        return ApiResponse.success(reportHabitService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ReportHabitResponse findById(@PathVariable Long id) {
-        return reportHabitService.findById(id);
+    public ApiResponse<ReportHabitResponse> findById(@PathVariable Long id) {
+        return ApiResponse.success(reportHabitService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ReportHabitResponse update(@PathVariable Long id, @Valid @RequestBody ReportHabitRequest request) {
-        return reportHabitService.update(id, request);
+    public ApiResponse<ReportHabitResponse> update(@PathVariable Long id, @Valid @RequestBody ReportHabitRequest request) {
+        return ApiResponse.success(reportHabitService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         reportHabitService.delete(id);
+        return ApiResponse.success(null);
     }
 }
