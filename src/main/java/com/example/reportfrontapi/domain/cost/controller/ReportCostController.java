@@ -1,9 +1,12 @@
 package com.example.reportfrontapi.domain.cost.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
+import com.example.reportfrontapi.domain.cost.application.CalendarCostResponse;
+import com.example.reportfrontapi.domain.cost.application.CategoryCostResponse;
 import com.example.reportfrontapi.domain.cost.application.ReportCostRequest;
 import com.example.reportfrontapi.domain.cost.application.ReportCostResponse;
 import com.example.reportfrontapi.domain.cost.application.ReportCostService;
+import com.example.reportfrontapi.domain.cost.application.WeeklyCostResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,8 +27,23 @@ public class ReportCostController {
     }
 
     @GetMapping
-    public ApiResponse<List<ReportCostResponse>> findAll() {
-        return ApiResponse.success(reportCostService.findAll());
+    public ApiResponse<List<ReportCostResponse>> findAll(@RequestParam String category) {
+        return ApiResponse.success(reportCostService.findAll(category));
+    }
+
+    @GetMapping("/calendar")
+    public ApiResponse<CalendarCostResponse> findCalendar(@RequestParam int year, @RequestParam int month) {
+        return ApiResponse.success(reportCostService.findCalendar(year, month));
+    }
+
+    @GetMapping("/week")
+    public ApiResponse<List<WeeklyCostResponse>> findWeekly(@RequestParam int year, @RequestParam int month) {
+        return ApiResponse.success(reportCostService.findWeekly(year, month));
+    }
+
+    @GetMapping("/month")
+    public ApiResponse<List<CategoryCostResponse>> findMonthlyByCategory(@RequestParam int year, @RequestParam int month) {
+        return ApiResponse.success(reportCostService.findMonthlyByCategory(year, month));
     }
 
     @GetMapping("/{id}")
