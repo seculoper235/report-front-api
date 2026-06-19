@@ -55,3 +55,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// bootJar(실행 가능 jar)만 생성하고 일반 plain jar는 만들지 않음 → Docker에서 jar 1개로 단순화
+tasks.named('jar') {
+    enabled = false
+}

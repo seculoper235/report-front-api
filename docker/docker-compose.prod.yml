@@ -1,0 +1,62 @@
+name: daily-prod
+
+# 운영용 구성: API + Postgres + Redis 한 묶음.
+# DB/Redis는 외부에 포트를 열지 않고 도커 내부 네트워크로만 통신한다.
+# API의 8080만 호스트에 노출하되, 클라우드 방화벽에서는 8080을 인터넷에 열지 말고
+# Tailscale(tailnet)을 통해서만 접근한다.
+#
+# 실행: docker compose -f docker/docker-compose.prod.yml --env-file docker/.env.prod up -d --build
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: report-front-api:latest
+    restart: unless-stopped
+    depends_on:
+      daily-db:
+        condition: service_healthy
+      daily-redis:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: server
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+      DB_HOST: daily-db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: daily-redis
+      JWT_SECRET: ${JWT_SECRET}
+      AWS_REGION: ${AWS_REGION:-ap-northeast-2}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_PUBLIC_BUCKET: ${AWS_S3_PUBLIC_BUCKET}
+      AWS_S3_PRIVATE_BUCKET: ${AWS_S3_PRIVATE_BUCKET}
+    ports:
+      - "8080:8080"
+
+  daily-db:
+    image: postgres:15.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: daily
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER} -d daily"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # ports 없음 — 내부 네트워크로만 접근
+
+  daily-redis:
+    image: redis:7.2
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    # ports 없음 — 내부 네트워크로만 접근
+
+volumes:
+  pgdata:
+  redisdata:

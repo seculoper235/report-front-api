@@ -1,0 +1,77 @@
+name: Deploy to Lightsail
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# 시크릿/변수는 GitHub Environment(production)에서 읽는다.
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      # 러너를 tailnet에 임시로 합류시켜 Lightsail의 Tailscale IP로 접근.
+      # (공개 SSH 포트를 열지 않아도 됨)
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      # 소스를 서버로 동기화. .env.prod 는 다음 step에서 따로 전달하므로 삭제 대상에서 제외.
+      - name: Sync source to server
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude 'build' --exclude '.gradle' \
+            --exclude 'out' --exclude 'docker/.env*' \
+            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new" \
+            ./ "${{ vars.SSH_USER }}@${{ vars.LIGHTSAIL_HOST }}:~/report-front-api/"
+
+      # secrets/vars 로 .env.prod 를 만든다(값은 로그에 출력되지 않음, GitHub가 마스킹).
+      - name: Build .env.prod
+        run: |
+          cat > .env.prod <<EOF
+          DB_USER=${{ vars.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          AWS_REGION=${{ vars.AWS_REGION }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_PUBLIC_BUCKET=${{ vars.AWS_S3_PUBLIC_BUCKET }}
+          AWS_S3_PRIVATE_BUCKET=${{ vars.AWS_S3_PRIVATE_BUCKET }}
+          EOF
+
+      - name: Copy .env.prod to server
+        run: |
+          scp -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
+            .env.prod "${{ vars.SSH_USER }}@${{ vars.LIGHTSAIL_HOST }}:~/report-front-api/docker/.env.prod"
+
+      - name: Deploy (build & up)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
+            "${{ vars.SSH_USER }}@${{ vars.LIGHTSAIL_HOST }}" <<'EOF'
+          set -euo pipefail
+          cd ~/report-front-api
+          chmod 600 docker/.env.prod
+          docker compose -f docker/docker-compose.prod.yml --env-file docker/.env.prod up -d --build
+          docker image prune -f
+          EOF
+
+      - name: Health check
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
+            "${{ vars.SSH_USER }}@${{ vars.LIGHTSAIL_HOST }}" \
+            'for i in $(seq 1 30); do curl -fsS http://localhost:8080/actuator/health && exit 0; sleep 3; done; echo "health check failed"; exit 1'
