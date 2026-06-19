@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.redemption.application;
 
+import com.example.reportfrontapi.common.storage.StorageService;
 import com.example.reportfrontapi.domain.gift.GiftInventory;
 import com.example.reportfrontapi.domain.gift.GiftInventoryStatus;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
@@ -39,6 +40,7 @@ class RedemptionServiceTest {
     @Mock private RedemptionOrderRepository redemptionOrderRepository;
     @Mock private PointService pointService;
     @Mock private UserRepository userRepository;
+    @Mock private StorageService storageService;
 
     @InjectMocks
     private RedemptionService redemptionService;

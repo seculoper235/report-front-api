@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.redemption.application;
 
+import com.example.reportfrontapi.common.storage.StorageService;
 import com.example.reportfrontapi.domain.gift.GiftInventory;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
 import com.example.reportfrontapi.domain.point.application.PointService;
@@ -28,6 +29,7 @@ public class RedemptionService {
     private final RedemptionOrderRepository redemptionOrderRepository;
     private final PointService pointService;
     private final UserRepository userRepository;
+    private final StorageService storageService;
 
     // 교환 처리: 멱등 체크 → 잔액 잠금/검증 → 재고 코드 pop → 차감 주문 생성. (정책 a: 재고 0이면 차감 없이 실패)
     @Transactional
@@ -90,7 +92,8 @@ public class RedemptionService {
                 order.getPointCost(),
                 order.getStatus().name(),
                 inventory != null ? inventory.getCode() : null,
-                inventory != null ? inventory.getBarcodeImageUrl() : null,
+                // 비공개 바코드는 저장된 object key를 단기 presigned GET URL로 변환해 소유자에게만 노출.
+                inventory != null ? storageService.resolveBarcodeUrl(inventory.getBarcodeImageUrl()) : null,
                 inventory != null ? inventory.getValidUntil() : null,
                 order.getCreatedAt());
     }

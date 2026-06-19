@@ -12,6 +12,8 @@ public record CodeLoadRequest(
 ) {
     public record CodeItem(
             @NotBlank String code,
+            // 비공개 바코드 이미지의 S3 object key. /api/admin/uploads(BARCODE_IMAGE)로 업로드 후
+            // 받은 objectKey를 전달. 조회 시 소유자에게만 presigned GET URL로 변환되어 노출된다.
             String barcodeImageUrl,
             LocalDate validUntil
     ) {

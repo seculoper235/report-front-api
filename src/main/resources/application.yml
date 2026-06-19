@@ -120,3 +120,16 @@ jwt:
   EXPIRATION_MILLISECONDS: 3600000  # 2 * 1000 * 60 * 30L
   REFRESH_EXPIRATION_MILLISECONDS: 86400000 # 48 * 1000 * 60 * 30L
 
+# 이미지 저장(S3). 자격증명은 DefaultCredentialsProvider(환경변수/인스턴스 프로파일)로 해결.
+aws:
+  s3:
+    region: ${AWS_REGION:ap-northeast-2}
+    # 상품 썸네일(공개). public-read 또는 CloudFront 구성 전제.
+    public-bucket: ${AWS_S3_PUBLIC_BUCKET:report-front-public}
+    # 바코드 이미지(비공개). 퍼블릭 액세스 차단, 조회 시 presigned GET으로만 노출.
+    private-bucket: ${AWS_S3_PRIVATE_BUCKET:report-front-private}
+    # 공개 버킷의 CDN/커스텀 도메인 base URL(없으면 S3 가상호스팅 URL 사용).
+    public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}
+    # presigned URL 만료(초).
+    presign-expiry-seconds: ${AWS_S3_PRESIGN_EXPIRY:600}
+
