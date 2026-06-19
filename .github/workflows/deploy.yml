@@ -63,7 +63,7 @@ jobs:
       # 서버엔 소스 전체가 아니라 docker/ (compose 파일)만 있으면 된다.
       - name: Sync compose to server
         run: |
-          rsync -az --delete \
+          rsync -az --delete --mkpath \
             --exclude '.env*' \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new" \
             ./docker/ "${{ vars.SSH_USER }}@${{ vars.LIGHTSAIL_HOST }}:~/report-front-api/docker/"
