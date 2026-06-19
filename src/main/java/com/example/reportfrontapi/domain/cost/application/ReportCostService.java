@@ -4,6 +4,7 @@ import com.example.reportfrontapi.common.response.PageResponse;
 import com.example.reportfrontapi.domain.cost.CostDivision;
 import com.example.reportfrontapi.domain.cost.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
+import com.example.reportfrontapi.domain.point.application.PointService;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ReportCostService {
     private final ReportCostRepository reportCostRepository;
+    private final PointService pointService;
 
     @Transactional
     public ReportCostResponse create(ReportCostRequest request) {
@@ -45,7 +47,10 @@ public class ReportCostService {
                 .costPoint(request.costPoint())
                 .build();
 
-        return ReportCostResponse.from(reportCostRepository.save(cost));
+        ReportCost saved = reportCostRepository.save(cost);
+        // 적립: 순포인트(GOOD +, BAD −)를 원장에 기록
+        pointService.recordEarnCost(saved.getUserId(), saved.getNormalCostPoint(), saved.getReportCostId());
+        return ReportCostResponse.from(saved);
     }
 
     public List<ReportCostResponse> findAll(String category) {
@@ -176,6 +181,7 @@ public class ReportCostService {
     @Transactional
     public ReportCostResponse update(Long id, ReportCostRequest request) {
         ReportCost cost = getOrThrow(id);
+        int oldNetPoint = cost.getNormalCostPoint();
         cost.update(
                 request.categoryName(),
                 request.costName(),
@@ -189,12 +195,18 @@ public class ReportCostService {
                 request.costPoint()
         );
 
+        // 조정: 변경된 순포인트 차액만 원장에 기록
+        pointService.recordAdjust(cost.getUserId(), cost.getNormalCostPoint() - oldNetPoint,
+                PointService.REF_REPORT_COST, id);
         return ReportCostResponse.from(cost);
     }
 
     @Transactional
     public void delete(Long id) {
         ReportCost cost = getOrThrow(id);
+        // 조정: 삭제된 소비의 적립분을 원장에서 차감
+        pointService.recordAdjust(cost.getUserId(), -cost.getNormalCostPoint(),
+                PointService.REF_REPORT_COST, id);
         reportCostRepository.delete(cost);
     }
 

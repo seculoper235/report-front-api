@@ -74,6 +74,7 @@ class RedemptionServiceTest {
         assertThat(response.status()).isEqualTo("ISSUED");
         assertThat(response.code()).isEqualTo("GIFT-CODE-XYZ");
         verify(redemptionOrderRepository).save(ArgumentMatchers.any(RedemptionOrder.class));
+        verify(pointService).recordRedeem(1L, 100, 5L);
     }
 
     @Test
@@ -105,6 +106,8 @@ class RedemptionServiceTest {
 
         verify(giftInventoryRepository, never()).popAvailable(ArgumentMatchers.anyLong());
         verify(redemptionOrderRepository, never()).save(ArgumentMatchers.any());
+        verify(pointService, never()).recordRedeem(ArgumentMatchers.anyLong(),
+                ArgumentMatchers.anyInt(), ArgumentMatchers.anyLong());
     }
 
     @Test

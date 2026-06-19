@@ -62,6 +62,9 @@ public class RedemptionService {
                         idempotencyKey, inventory.getGiftInventoryId()));
         inventory.issueTo(order.getRedemptionOrderId());
 
+        // 7. 원장에 차감 기록
+        pointService.recordRedeem(userId, product.getPointCost(), order.getRedemptionOrderId());
+
         return responseOf(order, product, inventory);
     }
 
