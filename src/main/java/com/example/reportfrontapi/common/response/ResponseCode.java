@@ -12,6 +12,8 @@ public enum ResponseCode implements CodeEnum {
     UNAUTHORIZED("RP004010", "인증이 필요합니다."),
     NOT_FOUND("RP004040", "대상을 찾을 수 없습니다."),
     CONFLICT("RP004090", "이미 존재하는 대상입니다."),
+    OUT_OF_STOCK("RP004091", "재고가 없습니다."),
+    INSUFFICIENT_POINT("RP004220", "포인트가 부족합니다."),
     INTERNAL_ERROR("RP005000", "서버 오류가 발생했습니다.");
 
     private final String code;

@@ -5,6 +5,8 @@ import com.example.reportfrontapi.common.response.ResponseCode;
 import com.example.reportfrontapi.domain.auth.DuplicateEmailException;
 import com.example.reportfrontapi.domain.auth.InvalidCredentialsException;
 import com.example.reportfrontapi.domain.auth.InvalidTokenException;
+import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
+import com.example.reportfrontapi.domain.redemption.OutOfStockException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.of(ResponseCode.CONFLICT, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(OutOfStockException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOutOfStock(OutOfStockException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.of(ResponseCode.OUT_OF_STOCK, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(InsufficientPointException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInsufficientPoint(InsufficientPointException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.of(ResponseCode.INSUFFICIENT_POINT, e.getMessage(), null));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
