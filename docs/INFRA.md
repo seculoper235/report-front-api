@@ -45,14 +45,18 @@ API는 AWS S3를 사용한다.
 | `AWS_REGION` | `ap-northeast-2` | `ap-northeast-2` |
 | `AWS_S3_PUBLIC_BUCKET` | `report-product-bucket` | `report-product-bucket` |
 | `AWS_S3_PRIVATE_BUCKET` | `report-gift-bucket` | `report-gift-bucket` |
+| `JAVA_OPTS` (1GB 번들 권장) | `-Xmx384m -XX:MaxMetaspaceSize=192m` | 동일 |
 
 > GitHub 계정 billing 잠금 시 워크플로가 실행되지 않으므로 결제 상태 먼저 확인.
+> 이미지는 GitHub Actions가 빌드해 **GHCR**(`ghcr.io/seculoper235/report-{front,admin}-api`)에 push하고,
+> 서버는 그것을 **pull만** 한다(인스턴스 빌드 없음). GHCR pull 인증은 배포 잡의 `GITHUB_TOKEN`으로 처리된다.
 
 ---
 
 ## 2. 각 노드 공통 1회 세팅 (SSH, ec2-user)
 
-front-api / admin-api / 데이터 노드 **모두** 아래를 수행한다(데이터 노드는 buildx 불필요).
+front-api / admin-api / 데이터 노드 **모두** 아래를 수행한다.
+서버는 빌드를 하지 않고 GHCR 이미지를 pull만 하므로 **buildx는 불필요**하다.
 
 ```bash
 echo "<report-deploy-key.pub>" >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
@@ -68,12 +72,10 @@ sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-
   -o /usr/local/lib/docker/cli-plugins/docker-compose
 sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-# buildx 플러그인 (API 호스트만 — compose build 사용)
-BUILDX_VER=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
-sudo curl -SL "https://github.com/docker/buildx/releases/download/${BUILDX_VER}/buildx-${BUILDX_VER}.linux-amd64" \
-  -o /usr/local/lib/docker/cli-plugins/docker-buildx
-sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
-sudo chown -R ec2-user:ec2-user /usr/local/lib/docker
+# 스왑 2GB (1GB 번들 권장 — pull/기동 중 메모리 여유 확보)
+sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 # Tailscale (URL 인증은 로컬 브라우저)
 curl -fsSL https://tailscale.com/install.sh | sh
@@ -104,10 +106,12 @@ docker compose -f docker/docker-compose.data.yml --env-file docker/.env.data up 
 
 ## 4. API 배포 (front-api / admin-api)
 
-각 repo `master` push → GitHub Actions 자동 배포(자기 호스트로). 수동은 Actions → Run workflow.
-- front-api: `~/report-front-api` 에 rsync → `docker/docker-compose.prod.yml` (8080)
-- admin-api: `~/report-admin-api` 에 rsync → `docker/docker-compose.prod.yml` (8080)
+각 repo `master` push → GitHub Actions 자동 배포. 수동은 Actions → Run workflow.
+흐름: **Actions에서 이미지 빌드 → GHCR push → 서버에 compose/.env 전달 → 서버가 pull & up**(인스턴스 빌드 없음).
+- front-api: 이미지 `ghcr.io/seculoper235/report-front-api`, `~/report-front-api/docker/` 로 compose 전달 (8080)
+- admin-api: 이미지 `ghcr.io/seculoper235/report-admin-api`, `~/report-admin-api/docker/` 로 compose 전달 (8080)
 - 둘 다 `.env.prod`의 `DB_HOST/REDIS_HOST`(데이터 노드 IP)로 접속. JWT/DB/Redis 자격증명은 동일 값.
+- 1GB 번들: `JAVA_OPTS` 변수로 힙 제한(`-Xmx384m -XX:MaxMetaspaceSize=192m`) + 스왑(2장)으로 안정화.
 
 검증:
 ```bash

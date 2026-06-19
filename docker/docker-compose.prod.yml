@@ -8,10 +8,9 @@ name: front-prod
 # 실행: docker compose -f docker/docker-compose.prod.yml --env-file docker/.env.prod up -d --build
 services:
   api:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    image: report-front-api:latest
+    # 이미지는 GitHub Actions가 빌드해 GHCR에 push한다. 서버는 pull만 한다(인스턴스 빌드 X).
+    image: ghcr.io/seculoper235/report-front-api:latest
+    pull_policy: always
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: server
