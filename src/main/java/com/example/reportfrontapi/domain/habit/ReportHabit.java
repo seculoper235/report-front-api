@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ReportHabit extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "report_habt_id", nullable = false)
     private Long reportCostId;  // 레포트 습관 일련번호
 

@@ -6,7 +6,9 @@ import com.example.reportfrontapi.domain.cost.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,14 +61,17 @@ public class ReportCostService {
         LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime end = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
 
-        return PageResponse.from(
-                reportCostRepository.search(division, start, end, pageable)
-                        .map(ReportCostResponse::from));
+        List<ReportCost> content = reportCostRepository.search(division, start, end, pageable);
+        Page<ReportCost> page = PageableExecutionUtils.getPage(
+                content, pageable, () -> reportCostRepository.countSearch(division, start, end));
+
+        return PageResponse.from(page.map(ReportCostResponse::from));
     }
 
-    // 전체 순포인트 합계(GOOD +, BAD -). 메인 화면 헤더에 표시.
+    // 전체 순포인트 합계(GOOD +, BAD -). 메인 화면 헤더에 표시. 집계 대상이 없으면 0.
     public int getTotalPoint() {
-        return reportCostRepository.sumNetPoint();
+        Integer netPoint = reportCostRepository.sumNetPoint();
+        return netPoint != null ? netPoint : 0;
     }
 
     // /calendar : 일별/월별 입금(INCREASE)/출금(DECREASE) costAmount 합산

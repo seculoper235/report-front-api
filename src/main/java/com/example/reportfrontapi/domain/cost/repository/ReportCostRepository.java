@@ -10,12 +10,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
 import jakarta.persistence.EntityManager;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -49,8 +46,10 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
 
     // 소비유형(division)/기간(start~end)을 선택적으로 적용해 페이징 조회. null인 조건은 무시.
     // 정렬은 Pageable의 sort로 처리(paymentAt / costPoint / costAmount).
-    public Page<ReportCost> search(CostDivision division, LocalDateTime start, LocalDateTime end, Pageable pageable) {
-        List<ReportCost> content = selectFrom(cost)
+    // 페이지 조립(총건수 결합)은 Service에서 처리하므로 여기서는 현재 페이지 데이터만 반환한다.
+    // TODO: 추후 Service 단에서 페이징 처리 이관 고려 필요
+    public List<ReportCost> search(CostDivision division, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        return selectFrom(cost)
                 .where(
                         divisionEq(division),
                         paymentAtGoe(start),
@@ -59,31 +58,34 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
 
-        JPAQuery<Long> countQuery = select(cost.count())
+    // search와 동일한 조건의 전체 건수(페이징 totalElements 산출용).
+    public long countSearch(CostDivision division, LocalDateTime start, LocalDateTime end) {
+        Long count = select(cost.count())
                 .from(cost)
                 .where(
                         divisionEq(division),
                         paymentAtGoe(start),
-                        paymentAtLt(end));
+                        paymentAtLt(end))
+                .fetchOne();
 
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        return count != null ? count : 0L;
     }
 
-    // 전체 순포인트 합계: GOOD은 +costPoint, BAD는 -costPoint (division/point가 null인 건 제외).
-    public int sumNetPoint() {
+    // 전체 순포인트 합계 집계: GOOD은 +costPoint, BAD는 -costPoint (division/point가 null인 건 제외).
+    // 집계 대상이 없으면 null을 반환하며, 기본값 처리는 Service에서 한다.
+    public Integer sumNetPoint() {
         NumberExpression<Integer> netPoint = new CaseBuilder()
                 .when(cost.costDivision.eq(CostDivision.GOOD)).then(cost.costPoint)
                 .otherwise(cost.costPoint.negate());
 
-        Integer sum = select(netPoint.sumAggregate())
+        return select(netPoint.sumAggregate())
                 .from(cost)
                 .where(
                         cost.costDivision.isNotNull(),
                         cost.costPoint.isNotNull())
                 .fetchOne();
-
-        return sum != null ? sum : 0;
     }
 
     private BooleanExpression divisionEq(CostDivision division) {
