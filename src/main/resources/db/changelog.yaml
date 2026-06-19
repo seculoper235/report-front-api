@@ -358,3 +358,59 @@ databaseChangeLog:
             tableName: rpt_redemption_order
             columnNames: idempotency_key
             constraintName: uk_redemption_idem
+  - changeSet:
+      id: create-point-ledger
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: report_point
+            columns:
+              - column:
+                  name: report_point_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: delta
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ref_type
+                  type: varchar(30)
+              - column:
+                  name: ref_id
+                  type: bigint
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - createIndex:
+            tableName: report_point
+            indexName: idx_point_user
+            columns:
+              - column:
+                  name: user_id
+        # 기존 소비 적립을 원장으로 backfill (GOOD +, BAD -, 포인트 있는 건만). QUOTE_ALL_OBJECTS에 맞춰 식별자 인용.
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              INSERT INTO "report_point" ("user_id", "delta", "reason", "ref_type", "ref_id", "crt_at", "crt_by", "udt_at", "udt_by")
+              SELECT "user_id",
+                     CASE WHEN "cost_dvsn" = 'GOOD' THEN "cost_pnt" ELSE -"cost_pnt" END,
+                     'EARN_COST', 'REPORT_COST', "rpt_cost_id",
+                     now(), "user_id", now(), "user_id"
+              FROM "rpt_cost"
+              WHERE "cost_dvsn" IS NOT NULL AND "cost_pnt" IS NOT NULL;
