@@ -4,6 +4,7 @@ import com.example.reportfrontapi.common.response.PageResponse;
 import com.example.reportfrontapi.domain.cost.CostDivision;
 import com.example.reportfrontapi.domain.cost.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
+import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,7 +48,7 @@ public class ReportCostService {
     }
 
     public List<ReportCostResponse> findAll(String category) {
-        return reportCostRepository.findByCategoryName(category).stream()
+        return reportCostRepository.findByCategoryName(category, SecurityUtil.getRequiredCurrentUserId()).stream()
                 .map(ReportCostResponse::from)
                 .toList();
     }
@@ -61,16 +62,17 @@ public class ReportCostService {
         LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime end = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
 
-        List<ReportCost> content = reportCostRepository.search(division, start, end, pageable);
+        Long userId = SecurityUtil.getRequiredCurrentUserId();
+        List<ReportCost> content = reportCostRepository.search(division, start, end, pageable, userId);
         Page<ReportCost> page = PageableExecutionUtils.getPage(
-                content, pageable, () -> reportCostRepository.countSearch(division, start, end));
+                content, pageable, () -> reportCostRepository.countSearch(division, start, end, userId));
 
         return PageResponse.from(page.map(ReportCostResponse::from));
     }
 
     // 전체 순포인트 합계(GOOD +, BAD -). 메인 화면 헤더에 표시. 집계 대상이 없으면 0.
     public int getTotalPoint() {
-        Integer netPoint = reportCostRepository.sumNetPoint();
+        Integer netPoint = reportCostRepository.sumNetPoint(SecurityUtil.getRequiredCurrentUserId());
         return netPoint != null ? netPoint : 0;
     }
 
@@ -149,7 +151,7 @@ public class ReportCostService {
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
 
-        return reportCostRepository.findByPaymentAtRange(start, end);
+        return reportCostRepository.findByPaymentAtRange(start, end, SecurityUtil.getRequiredCurrentUserId());
     }
 
     // 입금(INCREASE) 건의 costAmount 합산. getIncomeAmount()는 입금이 아니거나 null이면 0을 반환한다.
@@ -196,7 +198,7 @@ public class ReportCostService {
     }
 
     private ReportCost getOrThrow(Long id) {
-        return reportCostRepository.findById(id)
+        return reportCostRepository.findByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("ReportCost not found: " + id));
     }
 }

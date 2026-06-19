@@ -3,6 +3,7 @@ package com.example.reportfrontapi.domain.habit.application;
 import com.example.reportfrontapi.domain.habit.HabitDivision;
 import com.example.reportfrontapi.domain.habit.ReportHabit;
 import com.example.reportfrontapi.domain.habit.repository.ReportHabitRepository;
+import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class ReportHabitService {
     }
 
     public List<ReportHabitResponse> findAll() {
-        return reportHabitRepository.findAll().stream()
+        return reportHabitRepository.findAllByOwner(SecurityUtil.getRequiredCurrentUserId()).stream()
                 .map(ReportHabitResponse::from)
                 .toList();
     }
@@ -44,7 +45,7 @@ public class ReportHabitService {
         LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
 
         List<ReportHabit> habits =
-                reportHabitRepository.findByCreatedAtRange(start, end);
+                reportHabitRepository.findByCreatedAtRange(start, end, SecurityUtil.getRequiredCurrentUserId());
 
         // 일자별 그룹핑(달력 순서 유지를 위해 TreeMap)
         Map<LocalDate, List<ReportHabit>> byDate = habits.stream()
@@ -74,7 +75,7 @@ public class ReportHabitService {
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         List<ReportHabit> habits =
-                reportHabitRepository.findByCreatedAtRange(start, end);
+                reportHabitRepository.findByCreatedAtRange(start, end, SecurityUtil.getRequiredCurrentUserId());
 
         List<ReportHabitResponse> habitResponses = habits.stream()
                 .map(ReportHabitResponse::from)
@@ -118,7 +119,7 @@ public class ReportHabitService {
     }
 
     private ReportHabit getOrThrow(Long id) {
-        return reportHabitRepository.findById(id)
+        return reportHabitRepository.findByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("ReportHabit not found: " + id));
     }
 }

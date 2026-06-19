@@ -20,4 +20,9 @@ public final class SecurityUtil {
         }
         return Optional.of(userId);
     }
+
+    public static Long getRequiredCurrentUserId() {
+        return SecurityUtil.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증 정보가 없습니다."));
+    }
 }

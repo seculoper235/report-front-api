@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
@@ -28,29 +29,40 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         super(ReportCost.class, em);
     }
 
-    // paymentAt이 [start, end) 범위에 드는 소비 조회.
-    public List<ReportCost> findByPaymentAtRange(LocalDateTime start, LocalDateTime end) {
+    // 소유자(crt_by) + id로 단건 조회. 타 사용자 행은 조회되지 않는다.
+    public Optional<ReportCost> findByIdAndOwner(Long id, Long userId) {
+        return Optional.ofNullable(
+                selectFrom(cost)
+                        .where(cost.reportCostId.eq(id), ownerEq(userId))
+                        .fetchOne());
+    }
+
+    // paymentAt이 [start, end) 범위에 드는 소유자 소비 조회.
+    public List<ReportCost> findByPaymentAtRange(LocalDateTime start, LocalDateTime end, Long userId) {
         return selectFrom(cost)
                 .where(
+                        ownerEq(userId),
                         cost.paymentAt.goe(start),
                         cost.paymentAt.lt(end))
                 .fetch();
     }
 
-    // 카테고리 이름이 일치하는 소비 조회.
-    public List<ReportCost> findByCategoryName(String categoryName) {
+    // 카테고리 이름이 일치하는 소유자 소비 조회.
+    public List<ReportCost> findByCategoryName(String categoryName, Long userId) {
         return selectFrom(cost)
-                .where(cost.categoryName.eq(categoryName))
+                .where(ownerEq(userId), cost.categoryName.eq(categoryName))
                 .fetch();
     }
 
-    // 소비유형(division)/기간(start~end)을 선택적으로 적용해 페이징 조회. null인 조건은 무시.
+    // 소비유형(division)/기간(start~end)을 선택적으로 적용해 소유자 기준 페이징 조회. null인 조건은 무시.
     // 정렬은 Pageable의 sort로 처리(paymentAt / costPoint / costAmount).
     // 페이지 조립(총건수 결합)은 Service에서 처리하므로 여기서는 현재 페이지 데이터만 반환한다.
     // TODO: 추후 Service 단에서 페이징 처리 이관 고려 필요
-    public List<ReportCost> search(CostDivision division, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+    public List<ReportCost> search(CostDivision division, LocalDateTime start, LocalDateTime end,
+                                   Pageable pageable, Long userId) {
         return selectFrom(cost)
                 .where(
+                        ownerEq(userId),
                         divisionEq(division),
                         paymentAtGoe(start),
                         paymentAtLt(end))
@@ -61,10 +73,11 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
     }
 
     // search와 동일한 조건의 전체 건수(페이징 totalElements 산출용).
-    public long countSearch(CostDivision division, LocalDateTime start, LocalDateTime end) {
+    public long countSearch(CostDivision division, LocalDateTime start, LocalDateTime end, Long userId) {
         Long count = select(cost.count())
                 .from(cost)
                 .where(
+                        ownerEq(userId),
                         divisionEq(division),
                         paymentAtGoe(start),
                         paymentAtLt(end))
@@ -73,9 +86,9 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return count != null ? count : 0L;
     }
 
-    // 전체 순포인트 합계 집계: GOOD은 +costPoint, BAD는 -costPoint (division/point가 null인 건 제외).
+    // 소유자 전체 순포인트 합계 집계: GOOD은 +costPoint, BAD는 -costPoint (division/point가 null인 건 제외).
     // 집계 대상이 없으면 null을 반환하며, 기본값 처리는 Service에서 한다.
-    public Integer sumNetPoint() {
+    public Integer sumNetPoint(Long userId) {
         NumberExpression<Integer> netPoint = new CaseBuilder()
                 .when(cost.costDivision.eq(CostDivision.GOOD)).then(cost.costPoint)
                 .otherwise(cost.costPoint.negate());
@@ -83,9 +96,15 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return select(netPoint.sumAggregate())
                 .from(cost)
                 .where(
+                        ownerEq(userId),
                         cost.costDivision.isNotNull(),
                         cost.costPoint.isNotNull())
                 .fetchOne();
+    }
+
+    // 소유자(crt_by) 일치 조건.
+    private BooleanExpression ownerEq(Long userId) {
+        return cost.createdBy.eq(userId);
     }
 
     private BooleanExpression divisionEq(CostDivision division) {
