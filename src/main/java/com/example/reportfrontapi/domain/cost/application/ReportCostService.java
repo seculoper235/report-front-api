@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -32,6 +33,7 @@ public class ReportCostService {
                 .costName(request.costName())
                 .fixedYn(request.fixedYn())
                 .costDescription(request.costDescription())
+                .amountDivision(request.amountDivision())
                 .costAmount(request.costAmount())
                 .paymentMethod(request.paymentMethod())
                 .paymentAt(request.paymentAt())
@@ -67,7 +69,7 @@ public class ReportCostService {
         return reportCostRepository.sumNetPoint();
     }
 
-    // /calendar : 일별/월별 GOOD/BAD costPoint 합산 (habit의 month와 동일 구조)
+    // /calendar : 일별/월별 입금(INCREASE)/출금(DECREASE) costAmount 합산
     public CalendarCostResponse findCalendar(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
@@ -81,20 +83,20 @@ public class ReportCostService {
         List<CalendarCostResponse.DailySummary> daily = byDate.entrySet().stream()
                 .map(entry -> new CalendarCostResponse.DailySummary(
                         entry.getKey(),
-                        sumPoints(entry.getValue(), CostDivision.GOOD),
-                        sumPoints(entry.getValue(), CostDivision.BAD)))
+                        sumIncomeAmount(entry.getValue()),
+                        sumExpenseAmount(entry.getValue())))
                 .toList();
 
         CalendarCostResponse.MonthlySummary monthly = new CalendarCostResponse.MonthlySummary(
                 year,
                 month,
-                sumPoints(costs, CostDivision.GOOD),
-                sumPoints(costs, CostDivision.BAD));
+                sumIncomeAmount(costs),
+                sumExpenseAmount(costs));
 
         return new CalendarCostResponse(daily, monthly);
     }
 
-    // /week : 해당 월의 ISO-8601(월요일 시작) 주차별 GOOD/BAD costPoint 합산
+    // /week : 해당 월의 ISO-8601(월요일 시작) 주차별 입금/출금 costAmount 합산
     public List<WeeklyCostResponse> findWeekly(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
@@ -112,13 +114,13 @@ public class ReportCostService {
                             monday.get(WeekFields.ISO.weekBasedYear()),
                             monday.get(WeekFields.ISO.weekOfWeekBasedYear()),
                             monday,
-                            sumPoints(entry.getValue(), CostDivision.GOOD),
-                            sumPoints(entry.getValue(), CostDivision.BAD));
+                            sumIncomeAmount(entry.getValue()),
+                            sumExpenseAmount(entry.getValue()));
                 })
                 .toList();
     }
 
-    // /month : category별 totalCostPoint 순합(net) 목록
+    // /month : category별 입금/출금 costAmount 합산 목록
     public List<CategoryCostResponse> findMonthlyByCategory(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
@@ -132,7 +134,8 @@ public class ReportCostService {
         return byCategory.entrySet().stream()
                 .map(entry -> new CategoryCostResponse(
                         entry.getKey(),
-                        entry.getValue().stream().mapToInt(ReportCost::getNormalCostPoint).sum()))
+                        sumIncomeAmount(entry.getValue()),
+                        sumExpenseAmount(entry.getValue())))
                 .toList();
     }
 
@@ -144,12 +147,18 @@ public class ReportCostService {
         return reportCostRepository.findByPaymentAtRange(start, end);
     }
 
-    // 지정 division의 costPoint 합산. getCostPoint()는 부호 없는 원본 포인트(null이면 0)를 반환한다.
-    private int sumPoints(List<ReportCost> costs, CostDivision division) {
+    // 입금(INCREASE) 건의 costAmount 합산. getIncomeAmount()는 입금이 아니거나 null이면 0을 반환한다.
+    private BigInteger sumIncomeAmount(List<ReportCost> costs) {
         return costs.stream()
-                .filter(cost -> cost.getCostDivision() == division)
-                .mapToInt(ReportCost::getCostPoint)
-                .sum();
+                .map(ReportCost::getIncomeAmount)
+                .reduce(BigInteger.ZERO, BigInteger::add);
+    }
+
+    // 출금(DECREASE) 건의 costAmount 합산. getExpenseAmount()는 출금이 아니거나 null이면 0을 반환한다.
+    private BigInteger sumExpenseAmount(List<ReportCost> costs) {
+        return costs.stream()
+                .map(ReportCost::getExpenseAmount)
+                .reduce(BigInteger.ZERO, BigInteger::add);
     }
 
     public ReportCostResponse findById(Long id) {
@@ -164,6 +173,7 @@ public class ReportCostService {
                 request.costName(),
                 request.fixedYn(),
                 request.costDescription(),
+                request.amountDivision(),
                 request.costAmount(),
                 request.paymentMethod(),
                 request.paymentAt(),

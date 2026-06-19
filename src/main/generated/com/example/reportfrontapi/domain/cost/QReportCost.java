@@ -24,9 +24,11 @@ public class QReportCost extends EntityPathBase<ReportCost> {
 
     public final com.example.reportfrontapi.common.entity.QBaseEntity _super = new com.example.reportfrontapi.common.entity.QBaseEntity(this);
 
+    public final EnumPath<CostAmountDivision> amountDivision = createEnum("amountDivision", CostAmountDivision.class);
+
     public final StringPath categoryName = createString("categoryName");
 
-    public final NumberPath<Long> costAmount = createNumber("costAmount", Long.class);
+    public final NumberPath<java.math.BigInteger> costAmount = createNumber("costAmount", java.math.BigInteger.class);
 
     public final StringPath costDescription = createString("costDescription");
 

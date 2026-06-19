@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Table(name = "RPT_HABIT")
 @Getter
 @Setter
 @NoArgsConstructor

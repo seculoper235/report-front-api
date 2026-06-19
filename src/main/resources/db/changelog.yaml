@@ -126,3 +126,23 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
+  - changeSet:
+      id: modify-cost-amt-to-numeric
+      author: DevTeller
+      changes:
+        - modifyDataType:
+            tableName: rpt_cost
+            columnName: cost_amt
+            newDataType: numeric
+  - changeSet:
+      id: add-cost-amt-div
+      author: DevTeller
+      changes:
+        - addColumn:
+            tableName: rpt_cost
+            columns:
+              - column:
+                  name: cost_amt_div
+                  type: varchar(8)
+                  constraints:
+                    nullable: false

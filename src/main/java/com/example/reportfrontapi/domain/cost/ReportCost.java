@@ -5,10 +5,11 @@ import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "\"RPT_COST\"")
+@Table(name = "RPT_COST")
 @Builder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,8 +33,12 @@ public class ReportCost extends BaseEntity {
     @Column(name = "cost_desc")
     private String costDescription;    // 코스트 상세
 
+    @Convert(converter = CostAmountDivisionConverter.class)
+    @Column(name = "cost_amt_div", length = 8, nullable = false)
+    private CostAmountDivision amountDivision;    // 입금/출금 구분
+
     @Column(name = "cost_amt", nullable = false)
-    private Long costAmount;    // 코스트 금액
+    private BigInteger costAmount;    // 코스트 금액
 
     @Convert(converter = PaymentMethodConverter.class)
     @Column(name = "cost_mtd", length = 8, nullable = false)
@@ -63,13 +68,30 @@ public class ReportCost extends BaseEntity {
         return CostDivision.GOOD.equals(costDivision) ? costPoint : costPoint * -1;
     }
 
+    // 입금(INCREASE) 건의 금액(아니면 0). 입금금액 합산에 사용.
+    public BigInteger getIncomeAmount() {
+        if (amountDivision == null || costAmount == null) {
+            return BigInteger.ZERO;
+        }
+        return CostAmountDivision.INCREASE.equals(amountDivision) ? costAmount : BigInteger.ZERO;
+    }
+
+    // 출금(DECREASE) 건의 금액(아니면 0). 출금금액 합산에 사용.
+    public BigInteger getExpenseAmount() {
+        if (amountDivision == null || costAmount == null) {
+            return BigInteger.ZERO;
+        }
+        return CostAmountDivision.DECREASE.equals(amountDivision) ? costAmount : BigInteger.ZERO;
+    }
+
     public void update(String categoryName, String costName, Yn fixedYn, String costDescription,
-                       Long costAmount, PaymentMethod paymentMethod, LocalDateTime paymentAt,
-                       CostDivision costDivision, Integer costPoint) {
+                       CostAmountDivision amountDivision, BigInteger costAmount, PaymentMethod paymentMethod,
+                       LocalDateTime paymentAt, CostDivision costDivision, Integer costPoint) {
         this.categoryName = categoryName;
         this.costName = costName;
         this.fixedYn = fixedYn;
         this.costDescription = costDescription;
+        this.amountDivision = amountDivision;
         this.costAmount = costAmount;
         this.paymentMethod = paymentMethod;
         this.paymentAt = paymentAt;

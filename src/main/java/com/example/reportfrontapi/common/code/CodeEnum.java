@@ -1,12 +1,18 @@
 package com.example.reportfrontapi.common.code;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Arrays;
 
 /**
  * code/name 쌍으로 구성된 enum의 공통 타입.
  * enum은 클래스를 상속할 수 없으므로 인터페이스로 정의한다.
+ *
+ * JSON 직렬화/역직렬화는 code 값을 기준으로 한다(code <-> CodeEnum).
+ * getCode()에 @JsonValue를 두어 직렬화 시 code를 쓰고, 역직렬화 시에도 code로 매칭한다.
  */
 public interface CodeEnum {
+    @JsonValue
     String getCode();
 
     String getName();
