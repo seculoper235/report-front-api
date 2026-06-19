@@ -39,5 +39,7 @@ out/
 ### 운영 시크릿 (커밋 금지) ###
 docker/.env
 docker/.env.prod
+docker/.env.data
 .env
 .env.prod
+.env.data
