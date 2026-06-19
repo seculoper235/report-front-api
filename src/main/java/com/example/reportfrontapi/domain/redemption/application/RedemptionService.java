@@ -89,6 +89,8 @@ public class RedemptionService {
                 order.getRedemptionOrderId(),
                 order.getProductId(),
                 product != null ? product.getName() : null,
+                product != null ? product.getBrand() : null,
+                product != null ? product.getImageUrl() : null,
                 order.getPointCost(),
                 order.getStatus().name(),
                 inventory != null ? inventory.getCode() : null,
