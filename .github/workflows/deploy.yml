@@ -14,7 +14,7 @@ jobs:
       group: deploy-production
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # 러너를 tailnet에 임시로 합류시켜 Lightsail의 Tailscale IP로 접근.
       # (공개 SSH 포트를 열지 않아도 됨)

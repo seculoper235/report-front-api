@@ -3,6 +3,5 @@
 build
 out
 .idea
-*.iml
 HELP.md
 docker/.env*
