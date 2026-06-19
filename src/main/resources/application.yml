@@ -45,6 +45,12 @@ spring:
     compose:
       file: docker/docker-compose.yml
 
+  # Redis 설정 (refresh 토큰 저장 / access 토큰 블랙리스트)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   # Security OAuth
 #  security:
 #    oauth2.client:
@@ -109,7 +115,8 @@ server:
   port: 8080
 
 jwt:
-  secret: myjwttestsecretkey
+  # HS256 서명에 필요한 최소 32바이트 이상. 운영에서는 환경변수로 교체할 것.
+  secret: ${JWT_SECRET:myjwttestsecretkey-change-me-please-32bytes-minimum}
   EXPIRATION_MILLISECONDS: 3600000  # 2 * 1000 * 60 * 30L
   REFRESH_EXPIRATION_MILLISECONDS: 86400000 # 48 * 1000 * 60 * 30L
 

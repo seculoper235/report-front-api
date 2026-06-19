@@ -2,6 +2,9 @@ package com.example.reportfrontapi.web.exception.handler;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
 import com.example.reportfrontapi.common.response.ResponseCode;
+import com.example.reportfrontapi.domain.auth.DuplicateEmailException;
+import com.example.reportfrontapi.domain.auth.InvalidCredentialsException;
+import com.example.reportfrontapi.domain.auth.InvalidTokenException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.of(ResponseCode.INVALID_INPUT, message, null));
+    }
+
+    @ExceptionHandler({InvalidTokenException.class, InvalidCredentialsException.class})
+    public ResponseEntity<ApiResponse<Void>> handleUnauthorized(RuntimeException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.of(ResponseCode.UNAUTHORIZED, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateEmail(DuplicateEmailException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.of(ResponseCode.CONFLICT, e.getMessage(), null));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

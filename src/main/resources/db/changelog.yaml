@@ -146,3 +146,58 @@ databaseChangeLog:
                   type: varchar(8)
                   constraints:
                     nullable: false
+  - changeSet:
+      id: create-user
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: rpt_user
+            columns:
+              - column:
+                  name: rpt_user_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: crt_at
+                  type: datetime
+                  defaultValue: ${function.now}
+                  constraints:
+                    nullable: false
+              - column:
+                  name: crt_by
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: udt_at
+                  type: datetime
+                  defaultValue: ${function.now}
+                  constraints:
+                    nullable: false
+              - column:
+                  name: udt_by
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: rpt_user
+            columnNames: email
+            constraintName: uk_user_email
