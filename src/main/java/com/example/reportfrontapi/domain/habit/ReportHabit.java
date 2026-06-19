@@ -17,6 +17,9 @@ public class ReportHabit extends BaseEntity {
     @Column(name = "report_habt_id", nullable = false)
     private Long reportCostId;  // 레포트 습관 일련번호
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;    // 소유 사용자 ID (FK 아님)
+
     @Column(name = "habt_nm", nullable = false)
     private String habitName;    // 습관 이름
 

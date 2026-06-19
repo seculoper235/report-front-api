@@ -58,6 +58,8 @@ public class QReportCost extends EntityPathBase<ReportCost> {
     //inherited
     public final NumberPath<Long> updatedBy = _super.updatedBy;
 
+    public final NumberPath<Long> userId = createNumber("userId", Long.class);
+
     public QReportCost(String variable) {
         super(ReportCost.class, forVariable(variable));
     }

@@ -20,6 +20,9 @@ public class ReportCost extends BaseEntity {
     @Column(name = "rpt_cost_id", nullable = false)
     private Long reportCostId;  // 레포트 코스트 일련번호
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;    // 소유 사용자 ID (FK 아님)
+
     @Column(name = "cat_nm", length = 20, nullable = false)
     private String categoryName;    // 카테고리 이름
 

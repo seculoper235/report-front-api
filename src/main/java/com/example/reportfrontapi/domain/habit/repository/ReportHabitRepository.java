@@ -45,8 +45,8 @@ public class ReportHabitRepository extends BaseRepository<ReportHabit, Long> {
                 .fetch();
     }
 
-    // 소유자(crt_by) 일치 조건.
+    // 소유자(user_id) 일치 조건.
     private BooleanExpression ownerEq(Long userId) {
-        return habit.createdBy.eq(userId);
+        return habit.userId.eq(userId);
     }
 }

@@ -201,3 +201,29 @@ databaseChangeLog:
             tableName: rpt_user
             columnNames: email
             constraintName: uk_user_email
+  - changeSet:
+      id: add-user-id-to-cost-habit
+      author: DevTeller
+      changes:
+        - addColumn:
+            tableName: rpt_cost
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+        - addColumn:
+            tableName: rpt_habit
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+        - addNotNullConstraint:
+            tableName: rpt_cost
+            columnName: user_id
+            columnDataType: bigint
+            defaultNullValue: 0
+        - addNotNullConstraint:
+            tableName: rpt_habit
+            columnName: user_id
+            columnDataType: bigint
+            defaultNullValue: 0

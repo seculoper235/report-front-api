@@ -32,6 +32,7 @@ public class ReportCostService {
     @Transactional
     public ReportCostResponse create(ReportCostRequest request) {
         ReportCost cost = ReportCost.builder()
+                .userId(SecurityUtil.getRequiredCurrentUserId())
                 .categoryName(request.categoryName())
                 .costName(request.costName())
                 .fixedYn(request.fixedYn())

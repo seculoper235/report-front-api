@@ -26,6 +26,7 @@ public class ReportHabitService {
     @Transactional
     public ReportHabitResponse create(ReportHabitRequest request) {
         ReportHabit habit = new ReportHabit();
+        habit.setUserId(SecurityUtil.getRequiredCurrentUserId());
         habit.setHabitName(request.habitName());
         habit.setHabitDivision(request.habitDivision());
         habit.setHabitPoint(request.habitPoint());

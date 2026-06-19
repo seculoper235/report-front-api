@@ -102,9 +102,9 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 .fetchOne();
     }
 
-    // 소유자(crt_by) 일치 조건.
+    // 소유자(user_id) 일치 조건.
     private BooleanExpression ownerEq(Long userId) {
-        return cost.createdBy.eq(userId);
+        return cost.userId.eq(userId);
     }
 
     private BooleanExpression divisionEq(CostDivision division) {

@@ -44,6 +44,8 @@ public class QReportHabit extends EntityPathBase<ReportHabit> {
     //inherited
     public final NumberPath<Long> updatedBy = _super.updatedBy;
 
+    public final NumberPath<Long> userId = createNumber("userId", Long.class);
+
     public QReportHabit(String variable) {
         super(ReportHabit.class, forVariable(variable));
     }
