@@ -227,3 +227,134 @@ databaseChangeLog:
             columnName: user_id
             columnDataType: bigint
             defaultNullValue: 0
+  - changeSet:
+      id: create-gifticon
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: rpt_product
+            columns:
+              - column:
+                  name: rpt_product_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: brand
+                  type: varchar(100)
+              - column:
+                  name: image_url
+                  type: varchar(500)
+              - column:
+                  name: point_cost
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - createTable:
+            tableName: rpt_gift_inventory
+            columns:
+              - column:
+                  name: gift_inventory_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: code
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: barcode_image_url
+                  type: varchar(500)
+              - column:
+                  name: valid_until
+                  type: date
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: redemption_order_id
+                  type: bigint
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - createIndex:
+            tableName: rpt_gift_inventory
+            indexName: idx_inventory_product_status
+            columns:
+              - column:
+                  name: product_id
+              - column:
+                  name: status
+        - createTable:
+            tableName: rpt_redemption_order
+            columns:
+              - column:
+                  name: redemption_order_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: point_cost
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: idempotency_key
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: gift_inventory_id
+                  type: bigint
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: rpt_redemption_order
+            columnNames: idempotency_key
+            constraintName: uk_redemption_idem
