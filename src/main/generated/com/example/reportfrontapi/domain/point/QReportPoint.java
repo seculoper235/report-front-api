@@ -30,13 +30,15 @@ public class QReportPoint extends EntityPathBase<ReportPoint> {
     //inherited
     public final NumberPath<Long> createdBy = _super.createdBy;
 
-    public final NumberPath<Integer> delta = createNumber("delta", Integer.class);
+    public final NumberPath<Integer> pointAmount = createNumber("pointAmount", Integer.class);
+
+    public final EnumPath<PointAmountDivision> pointAmountDivision = createEnum("pointAmountDivision", PointAmountDivision.class);
 
     public final EnumPath<PointReason> reason = createEnum("reason", PointReason.class);
 
     public final NumberPath<Long> refId = createNumber("refId", Long.class);
 
-    public final StringPath refType = createString("refType");
+    public final EnumPath<PointRefType> refType = createEnum("refType", PointRefType.class);
 
     public final NumberPath<Long> reportPointId = createNumber("reportPointId", Long.class);
 

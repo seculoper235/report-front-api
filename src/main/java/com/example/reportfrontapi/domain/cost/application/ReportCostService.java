@@ -4,6 +4,7 @@ import com.example.reportfrontapi.common.response.PageResponse;
 import com.example.reportfrontapi.domain.cost.CostDivision;
 import com.example.reportfrontapi.domain.cost.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
+import com.example.reportfrontapi.domain.point.PointRefType;
 import com.example.reportfrontapi.domain.point.application.PointService;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
@@ -197,7 +198,7 @@ public class ReportCostService {
 
         // 조정: 변경된 순포인트 차액만 원장에 기록
         pointService.recordAdjust(cost.getUserId(), cost.getNormalCostPoint() - oldNetPoint,
-                PointService.REF_REPORT_COST, id);
+                PointRefType.REPORT_COST, id);
         return ReportCostResponse.from(cost);
     }
 
@@ -206,7 +207,7 @@ public class ReportCostService {
         ReportCost cost = getOrThrow(id);
         // 조정: 삭제된 소비의 적립분을 원장에서 차감
         pointService.recordAdjust(cost.getUserId(), -cost.getNormalCostPoint(),
-                PointService.REF_REPORT_COST, id);
+                PointRefType.REPORT_COST, id);
         reportCostRepository.delete(cost);
     }
 

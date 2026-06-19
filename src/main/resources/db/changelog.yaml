@@ -378,18 +378,23 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: delta
+                  name: point_amt_div
+                  type: varchar(8)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: point_amt
                   type: int
                   constraints:
                     nullable: false
               - column:
                   name: reason
-                  type: varchar(20)
+                  type: varchar(8)
                   constraints:
                     nullable: false
               - column:
                   name: ref_type
-                  type: varchar(30)
+                  type: varchar(8)
               - column:
                   name: ref_id
                   type: bigint
@@ -403,14 +408,15 @@ databaseChangeLog:
             columns:
               - column:
                   name: user_id
-        # 기존 소비 적립을 원장으로 backfill (GOOD +, BAD -, 포인트 있는 건만). QUOTE_ALL_OBJECTS에 맞춰 식별자 인용.
+        # 기존 소비 적립을 원장으로 backfill (GOOD=적립 RE030001, BAD=차감 RE030002, 포인트 있는 건만).
+        # 분류/사유/출처유형은 CodeEnum code로 저장. QUOTE_ALL_OBJECTS에 맞춰 식별자 인용.
         - sql:
             dbms: postgresql, h2
             sql: >-
-              INSERT INTO "report_point" ("user_id", "delta", "reason", "ref_type", "ref_id", "crt_at", "crt_by", "udt_at", "udt_by")
+              INSERT INTO "report_point" ("user_id", "point_amt_div", "point_amt", "reason", "ref_type", "ref_id", "crt_at", "crt_by", "udt_at", "udt_by")
               SELECT "user_id",
-                     CASE WHEN "cost_dvsn" = 'GOOD' THEN "cost_pnt" ELSE -"cost_pnt" END,
-                     'EARN_COST', 'REPORT_COST', "rpt_cost_id",
+                     CASE WHEN "cost_dvsn" = 'GOOD' THEN 'RE030001' ELSE 'RE030002' END,
+                     "cost_pnt", 'RE010001', 'RE020001', "rpt_cost_id",
                      now(), "user_id", now(), "user_id"
               FROM "rpt_cost"
               WHERE "cost_dvsn" IS NOT NULL AND "cost_pnt" IS NOT NULL;
