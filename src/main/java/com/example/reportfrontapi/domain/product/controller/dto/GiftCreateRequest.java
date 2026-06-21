@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.List;
 
-public record CodeLoadCreateRequest(
+public record GiftCreateRequest(
         @NotEmpty @Valid List<CodeItem> codes
 ) {
     public record CodeItem(

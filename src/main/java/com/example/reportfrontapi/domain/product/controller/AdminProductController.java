@@ -2,7 +2,7 @@ package com.example.reportfrontapi.domain.product.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
 import com.example.reportfrontapi.domain.product.application.ProductCreateService;
-import com.example.reportfrontapi.domain.product.controller.dto.CodeLoadCreateRequest;
+import com.example.reportfrontapi.domain.product.controller.dto.GiftCreateRequest;
 import com.example.reportfrontapi.domain.product.controller.dto.ProductCreateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class AdminProductController {
     // 코드 재고 적재. 적재된 코드 수 반환.
     @PostMapping("/{id}/codes")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Integer> addCodes(@PathVariable Long id, @Valid @RequestBody CodeLoadCreateRequest request) {
+    public ApiResponse<Integer> addCodes(@PathVariable Long id, @Valid @RequestBody GiftCreateRequest request) {
         return ApiResponse.success(productCreateService.addCodes(id, request));
     }
 }
