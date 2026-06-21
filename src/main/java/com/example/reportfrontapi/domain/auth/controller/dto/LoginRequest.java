@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.auth.application.dto;
+package com.example.reportfrontapi.domain.auth.controller.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

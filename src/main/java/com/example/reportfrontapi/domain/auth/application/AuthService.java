@@ -3,7 +3,7 @@ package com.example.reportfrontapi.domain.auth.application;
 import com.example.reportfrontapi.domain.auth.DuplicateEmailException;
 import com.example.reportfrontapi.domain.auth.InvalidCredentialsException;
 import com.example.reportfrontapi.domain.auth.InvalidTokenException;
-import com.example.reportfrontapi.domain.auth.application.dto.TokenResponse;
+import com.example.reportfrontapi.domain.auth.controller.dto.TokenResponse;
 import com.example.reportfrontapi.domain.user.model.Role;
 import com.example.reportfrontapi.domain.user.model.User;
 import com.example.reportfrontapi.domain.user.repository.UserRepository;
