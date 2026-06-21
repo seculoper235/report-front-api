@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.habit.application;
+package com.example.reportfrontapi.domain.habit.controller.dto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * 월별 습관 집계 응답.
  * goodPoint/badPoint는 각 division에 해당하는 habitPoint 원본 값을 합산한 값(둘 다 양수)이다.
  */
-public record MonthlyHabitResponse(
+public record MonthlyHabitFindResponse(
         List<DailySummary> daily,    // 일별 정보
         MonthlySummary monthly       // 월별 정보
 ) {

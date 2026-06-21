@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.habit;
+package com.example.reportfrontapi.domain.habit.model;
 
 import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;

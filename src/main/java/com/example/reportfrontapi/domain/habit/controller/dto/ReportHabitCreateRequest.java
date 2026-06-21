@@ -1,10 +1,10 @@
-package com.example.reportfrontapi.domain.habit.application;
+package com.example.reportfrontapi.domain.habit.controller.dto;
 
-import com.example.reportfrontapi.domain.habit.HabitDivision;
+import com.example.reportfrontapi.domain.habit.model.HabitDivision;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record ReportHabitRequest(
+public record ReportHabitCreateRequest(
         @NotBlank
         String habitName,        // 습관 이름
         @NotNull

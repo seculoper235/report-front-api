@@ -1,11 +1,14 @@
 package com.example.reportfrontapi.domain.habit.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
-import com.example.reportfrontapi.domain.habit.application.DailyHabitResponse;
-import com.example.reportfrontapi.domain.habit.application.MonthlyHabitResponse;
-import com.example.reportfrontapi.domain.habit.application.ReportHabitRequest;
-import com.example.reportfrontapi.domain.habit.application.ReportHabitResponse;
-import com.example.reportfrontapi.domain.habit.application.ReportHabitService;
+import com.example.reportfrontapi.domain.habit.application.ReportHabitCreateService;
+import com.example.reportfrontapi.domain.habit.application.ReportHabitDeleteService;
+import com.example.reportfrontapi.domain.habit.application.ReportHabitFindService;
+import com.example.reportfrontapi.domain.habit.controller.dto.DailyHabitFindResponse;
+import com.example.reportfrontapi.domain.habit.controller.dto.MonthlyHabitFindResponse;
+import com.example.reportfrontapi.domain.habit.controller.dto.ReportHabitCreateRequest;
+import com.example.reportfrontapi.domain.habit.controller.dto.ReportHabitCreateResponse;
+import com.example.reportfrontapi.domain.habit.controller.dto.ReportHabitFindResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,43 +22,45 @@ import java.util.List;
 @RequestMapping("/api/habits")
 @RequiredArgsConstructor
 public class ReportHabitController {
-    private final ReportHabitService reportHabitService;
+    private final ReportHabitFindService reportHabitFindService;
+    private final ReportHabitCreateService reportHabitCreateService;
+    private final ReportHabitDeleteService reportHabitDeleteService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<ReportHabitResponse> create(@Valid @RequestBody ReportHabitRequest request) {
-        return ApiResponse.success(reportHabitService.create(request));
+    public ApiResponse<ReportHabitCreateResponse> create(@Valid @RequestBody ReportHabitCreateRequest request) {
+        return ApiResponse.success(reportHabitCreateService.create(request));
     }
 
     @GetMapping
-    public ApiResponse<List<ReportHabitResponse>> findAll() {
-        return ApiResponse.success(reportHabitService.findAll());
+    public ApiResponse<List<ReportHabitFindResponse>> findAll() {
+        return ApiResponse.success(reportHabitFindService.findAll());
     }
 
     @GetMapping("/month")
-    public ApiResponse<MonthlyHabitResponse> findByMonth(@RequestParam int year, @RequestParam int month) {
-        return ApiResponse.success(reportHabitService.findByMonth(year, month));
+    public ApiResponse<MonthlyHabitFindResponse> findByMonth(@RequestParam int year, @RequestParam int month) {
+        return ApiResponse.success(reportHabitFindService.findByMonth(year, month));
     }
 
     @GetMapping("/daily")
-    public ApiResponse<DailyHabitResponse> findByDate(
+    public ApiResponse<DailyHabitFindResponse> findByDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.success(reportHabitService.findByDate(date));
+        return ApiResponse.success(reportHabitFindService.findByDate(date));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<ReportHabitResponse> findById(@PathVariable Long id) {
-        return ApiResponse.success(reportHabitService.findById(id));
+    public ApiResponse<ReportHabitFindResponse> findById(@PathVariable Long id) {
+        return ApiResponse.success(reportHabitFindService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<ReportHabitResponse> update(@PathVariable Long id, @Valid @RequestBody ReportHabitRequest request) {
-        return ApiResponse.success(reportHabitService.update(id, request));
+    public ApiResponse<ReportHabitCreateResponse> update(@PathVariable Long id, @Valid @RequestBody ReportHabitCreateRequest request) {
+        return ApiResponse.success(reportHabitCreateService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        reportHabitService.delete(id);
+        reportHabitDeleteService.delete(id);
         return ApiResponse.success(null);
     }
 }

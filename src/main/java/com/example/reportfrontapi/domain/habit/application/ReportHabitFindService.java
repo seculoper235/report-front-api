@@ -1,7 +1,10 @@
 package com.example.reportfrontapi.domain.habit.application;
 
-import com.example.reportfrontapi.domain.habit.HabitDivision;
-import com.example.reportfrontapi.domain.habit.ReportHabit;
+import com.example.reportfrontapi.domain.habit.controller.dto.DailyHabitFindResponse;
+import com.example.reportfrontapi.domain.habit.controller.dto.MonthlyHabitFindResponse;
+import com.example.reportfrontapi.domain.habit.controller.dto.ReportHabitFindResponse;
+import com.example.reportfrontapi.domain.habit.model.HabitDivision;
+import com.example.reportfrontapi.domain.habit.model.ReportHabit;
 import com.example.reportfrontapi.domain.habit.repository.ReportHabitRepository;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,27 +23,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ReportHabitService {
+public class ReportHabitFindService {
     private final ReportHabitRepository reportHabitRepository;
 
-    @Transactional
-    public ReportHabitResponse create(ReportHabitRequest request) {
-        ReportHabit habit = new ReportHabit();
-        habit.setUserId(SecurityUtil.getRequiredCurrentUserId());
-        habit.setHabitName(request.habitName());
-        habit.setHabitDivision(request.habitDivision());
-        habit.setHabitPoint(request.habitPoint());
-
-        return ReportHabitResponse.from(reportHabitRepository.save(habit));
-    }
-
-    public List<ReportHabitResponse> findAll() {
+    public List<ReportHabitFindResponse> findAll() {
         return reportHabitRepository.findAllByOwner(SecurityUtil.getRequiredCurrentUserId()).stream()
-                .map(ReportHabitResponse::from)
+                .map(ReportHabitFindResponse::from)
                 .toList();
     }
 
-    public MonthlyHabitResponse findByMonth(int year, int month) {
+    public MonthlyHabitFindResponse findByMonth(int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
@@ -55,38 +47,42 @@ public class ReportHabitService {
                         TreeMap::new,
                         Collectors.toList()));
 
-        List<MonthlyHabitResponse.DailySummary> daily = byDate.entrySet().stream()
-                .map(entry -> new MonthlyHabitResponse.DailySummary(
+        List<MonthlyHabitFindResponse.DailySummary> daily = byDate.entrySet().stream()
+                .map(entry -> new MonthlyHabitFindResponse.DailySummary(
                         entry.getKey(),
                         sumPoints(entry.getValue(), HabitDivision.GOOD),
                         sumPoints(entry.getValue(), HabitDivision.BAD)))
                 .toList();
 
-        MonthlyHabitResponse.MonthlySummary monthly = new MonthlyHabitResponse.MonthlySummary(
+        MonthlyHabitFindResponse.MonthlySummary monthly = new MonthlyHabitFindResponse.MonthlySummary(
                 year,
                 month,
                 sumPoints(habits, HabitDivision.GOOD),
                 sumPoints(habits, HabitDivision.BAD));
 
-        return new MonthlyHabitResponse(daily, monthly);
+        return new MonthlyHabitFindResponse(daily, monthly);
     }
 
-    public DailyHabitResponse findByDate(LocalDate date) {
+    public DailyHabitFindResponse findByDate(LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         List<ReportHabit> habits =
                 reportHabitRepository.findByCreatedAtRange(start, end, SecurityUtil.getRequiredCurrentUserId());
 
-        List<ReportHabitResponse> habitResponses = habits.stream()
-                .map(ReportHabitResponse::from)
+        List<ReportHabitFindResponse> habitResponses = habits.stream()
+                .map(ReportHabitFindResponse::from)
                 .toList();
 
-        return new DailyHabitResponse(
+        return new DailyHabitFindResponse(
                 date,
                 habitResponses,
                 sumPoints(habits, HabitDivision.GOOD),
                 sumPoints(habits, HabitDivision.BAD));
+    }
+
+    public ReportHabitFindResponse findById(Long id) {
+        return ReportHabitFindResponse.from(getOrThrow(id));
     }
 
     // 지정 division의 habitPoint 합산. getHabitPoint()는 부호 없는 원본 포인트(null이면 0)를 반환한다.
@@ -95,28 +91,6 @@ public class ReportHabitService {
                 .filter(habit -> habit.getHabitDivision() == division)
                 .mapToInt(ReportHabit::getHabitPoint)
                 .sum();
-    }
-
-    public ReportHabitResponse findById(Long id) {
-        return ReportHabitResponse.from(getOrThrow(id));
-    }
-
-    @Transactional
-    public ReportHabitResponse update(Long id, ReportHabitRequest request) {
-        ReportHabit habit = getOrThrow(id);
-        habit.update(
-                request.habitName(),
-                request.habitDivision(),
-                request.habitPoint()
-        );
-
-        return ReportHabitResponse.from(habit);
-    }
-
-    @Transactional
-    public void delete(Long id) {
-        ReportHabit habit = getOrThrow(id);
-        reportHabitRepository.delete(habit);
     }
 
     private ReportHabit getOrThrow(Long id) {
