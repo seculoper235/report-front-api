@@ -29,7 +29,7 @@ public class QReportCost extends EntityPathBase<ReportCost> {
 
     public final EnumPath<CostAmountDivision> amountDivision = createEnum("amountDivision", CostAmountDivision.class);
 
-    public final QCostCategory category;
+    public final com.example.reportfrontapi.domain.category.model.QCostCategory category;
 
     public final NumberPath<java.math.BigInteger> costAmount = createNumber("costAmount", java.math.BigInteger.class);
 
@@ -81,7 +81,7 @@ public class QReportCost extends EntityPathBase<ReportCost> {
 
     public QReportCost(Class<? extends ReportCost> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.category = inits.isInitialized("category") ? new QCostCategory(forProperty("category")) : null;
+        this.category = inits.isInitialized("category") ? new com.example.reportfrontapi.domain.category.model.QCostCategory(forProperty("category")) : null;
     }
 
 }

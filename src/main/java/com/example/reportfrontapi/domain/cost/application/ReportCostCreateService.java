@@ -2,9 +2,9 @@ package com.example.reportfrontapi.domain.cost.application;
 
 import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostCreateRequest;
 import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostCreateResponse;
-import com.example.reportfrontapi.domain.cost.model.CostCategory;
+import com.example.reportfrontapi.domain.category.model.CostCategory;
 import com.example.reportfrontapi.domain.cost.model.ReportCost;
-import com.example.reportfrontapi.domain.cost.repository.CostCategoryRepository;
+import com.example.reportfrontapi.domain.category.repository.CostCategoryRepository;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
 import com.example.reportfrontapi.domain.point.application.PointCreateService;
 import com.example.reportfrontapi.domain.point.model.PointRefType;

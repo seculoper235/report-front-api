@@ -1,11 +1,13 @@
-package com.example.reportfrontapi.domain.cost.repository;
+package com.example.reportfrontapi.domain.category.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.cost.model.CostCategory;
-import com.example.reportfrontapi.domain.cost.model.QCostCategory;
+import com.example.reportfrontapi.domain.category.controller.dto.CostCategoryFindResponse;
+import com.example.reportfrontapi.domain.category.model.CostCategory;
+import com.example.reportfrontapi.domain.category.model.QCostCategory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,5 +25,14 @@ public class CostCategoryRepository extends BaseRepository<CostCategory, Long> {
                 selectFrom(category)
                         .where(category.categoryId.eq(id), category.userId.eq(userId))
                         .fetchOne());
+    }
+
+    // 소유자(user_id)의 카테고리 목록을 id 오름차순으로 조회해 응답 DTO로 반환.
+    public List<CostCategoryFindResponse> findAllByOwner(Long userId) {
+        return select(CostCategoryFindResponse.class, category.categoryId, category.categoryName)
+                .from(category)
+                .where(category.userId.eq(userId))
+                .orderBy(category.categoryId.asc())
+                .fetch();
     }
 }

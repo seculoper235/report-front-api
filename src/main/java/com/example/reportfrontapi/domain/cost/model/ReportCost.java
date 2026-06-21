@@ -4,6 +4,7 @@ import com.example.reportfrontapi.common.converter.CostAmountDivisionConverter;
 import com.example.reportfrontapi.common.converter.PaymentMethodConverter;
 import com.example.reportfrontapi.common.dto.Yn;
 import com.example.reportfrontapi.common.entity.BaseEntity;
+import com.example.reportfrontapi.domain.category.model.CostCategory;
 import jakarta.persistence.*;
 import lombok.*;
 

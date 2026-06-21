@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.cost.model;
+package com.example.reportfrontapi.domain.category.model;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -18,7 +18,7 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QCostCategory extends EntityPathBase<CostCategory> {
 
-    private static final long serialVersionUID = 1543692191L;
+    private static final long serialVersionUID = -679250994L;
 
     public static final QCostCategory costCategory = new QCostCategory("costCategory");
 

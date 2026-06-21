@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.cost.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
+import com.example.reportfrontapi.domain.category.model.QCostCategory;
 import com.example.reportfrontapi.domain.cost.model.CostDivision;
-import com.example.reportfrontapi.domain.cost.model.QCostCategory;
 import com.example.reportfrontapi.domain.cost.model.QReportCost;
 import com.example.reportfrontapi.domain.cost.model.ReportCost;
 import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostFindResponse;
