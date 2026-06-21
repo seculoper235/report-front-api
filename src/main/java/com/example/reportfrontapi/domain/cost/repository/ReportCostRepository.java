@@ -62,6 +62,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                                    Pageable pageable, Long userId) {
         return selectFrom(cost)
                 .where(
+                        hasCostDivision(),
                         ownerEq(userId),
                         divisionEq(division),
                         paymentAtGoe(start),
@@ -77,6 +78,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         Long count = select(cost.count())
                 .from(cost)
                 .where(
+                        hasCostDivision(),
                         ownerEq(userId),
                         divisionEq(division),
                         paymentAtGoe(start),
@@ -96,10 +98,15 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return select(netPoint.sumAggregate())
                 .from(cost)
                 .where(
+                        hasCostDivision(),
                         ownerEq(userId),
                         cost.costDivision.isNotNull(),
                         cost.costPoint.isNotNull())
                 .fetchOne();
+    }
+
+    private BooleanExpression hasCostDivision() {
+        return cost.costDivision.isNotNull();
     }
 
     // 소유자(user_id) 일치 조건.
