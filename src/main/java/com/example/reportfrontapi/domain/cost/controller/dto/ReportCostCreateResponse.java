@@ -1,15 +1,15 @@
-package com.example.reportfrontapi.domain.cost.application;
+package com.example.reportfrontapi.domain.cost.controller.dto;
 
 import com.example.reportfrontapi.common.dto.Yn;
-import com.example.reportfrontapi.domain.cost.CostAmountDivision;
-import com.example.reportfrontapi.domain.cost.CostDivision;
-import com.example.reportfrontapi.domain.cost.PaymentMethod;
-import com.example.reportfrontapi.domain.cost.ReportCost;
+import com.example.reportfrontapi.domain.cost.model.CostAmountDivision;
+import com.example.reportfrontapi.domain.cost.model.CostDivision;
+import com.example.reportfrontapi.domain.cost.model.PaymentMethod;
+import com.example.reportfrontapi.domain.cost.model.ReportCost;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 
-public record ReportCostResponse(
+public record ReportCostCreateResponse(
         Long reportCostId,           // 레포트 코스트 일련번호
         Long categoryId,             // 카테고리 ID
         String categoryName,         // 카테고리 이름
@@ -23,8 +23,8 @@ public record ReportCostResponse(
         CostDivision costDivision,   // 소비 유형
         Integer costPoint            // 소비 포인트(부호 없는 원본 값)
 ) {
-    public static ReportCostResponse from(ReportCost cost) {
-        return new ReportCostResponse(
+    public static ReportCostCreateResponse from(ReportCost cost) {
+        return new ReportCostCreateResponse(
                 cost.getReportCostId(),
                 cost.getCategory().getCategoryId(),
                 cost.getCategory().getCategoryName(),

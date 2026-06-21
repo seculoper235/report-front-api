@@ -1,16 +1,16 @@
-package com.example.reportfrontapi.domain.cost.application;
+package com.example.reportfrontapi.domain.cost.controller.dto;
 
 import com.example.reportfrontapi.common.dto.Yn;
-import com.example.reportfrontapi.domain.cost.CostAmountDivision;
-import com.example.reportfrontapi.domain.cost.CostDivision;
-import com.example.reportfrontapi.domain.cost.PaymentMethod;
+import com.example.reportfrontapi.domain.cost.model.CostAmountDivision;
+import com.example.reportfrontapi.domain.cost.model.CostDivision;
+import com.example.reportfrontapi.domain.cost.model.PaymentMethod;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 
-public record ReportCostRequest(
+public record ReportCostCreateRequest(
         @NotNull
         Long categoryId,             // 카테고리 ID (RPT_COST_CAT)
         @NotBlank

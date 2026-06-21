@@ -1,13 +1,13 @@
 package com.example.reportfrontapi.domain.cost.application;
 
 import com.example.reportfrontapi.common.response.PageResponse;
-import com.example.reportfrontapi.domain.cost.CostCategory;
-import com.example.reportfrontapi.domain.cost.CostDivision;
-import com.example.reportfrontapi.domain.cost.ReportCost;
-import com.example.reportfrontapi.domain.cost.repository.CostCategoryRepository;
+import com.example.reportfrontapi.domain.cost.controller.dto.CalendarCostFindResponse;
+import com.example.reportfrontapi.domain.cost.controller.dto.CategoryCostFindResponse;
+import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostFindResponse;
+import com.example.reportfrontapi.domain.cost.controller.dto.WeeklyCostFindResponse;
+import com.example.reportfrontapi.domain.cost.model.CostDivision;
+import com.example.reportfrontapi.domain.cost.model.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
-import com.example.reportfrontapi.domain.point.model.PointRefType;
-import com.example.reportfrontapi.domain.point.application.PointCreateService;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,49 +30,25 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ReportCostService {
+public class ReportCostFindService {
     private final ReportCostRepository reportCostRepository;
-    private final CostCategoryRepository costCategoryRepository;
-    private final PointCreateService pointService;
 
-    @Transactional
-    public ReportCostResponse create(ReportCostRequest request) {
-        ReportCost cost = ReportCost.builder()
-                .userId(SecurityUtil.getRequiredCurrentUserId())
-                .category(getCategoryOrThrow(request.categoryId()))
-                .costName(request.costName())
-                .fixedYn(request.fixedYn())
-                .costDescription(request.costDescription())
-                .amountDivision(request.amountDivision())
-                .costAmount(request.costAmount())
-                .paymentMethod(request.paymentMethod())
-                .paymentAt(request.paymentAt())
-                .costDivision(request.costDivision())
-                .costPoint(request.costPoint())
-                .build();
-
-        ReportCost saved = reportCostRepository.save(cost);
-        // 적립: 순포인트(GOOD +, BAD −)를 원장에 기록
-        pointService.recordEarnCost(saved.getUserId(), saved.getNormalCostPoint(), saved.getReportCostId());
-        return ReportCostResponse.from(saved);
-    }
-
-    public List<ReportCostResponse> findAll(Long categoryId) {
+    public List<ReportCostFindResponse> findAll(Long categoryId) {
         return reportCostRepository.findByCategoryId(categoryId, SecurityUtil.getRequiredCurrentUserId());
     }
 
     // 소비 내역 무한 스크롤 조회. division/기간은 옵션, 정렬은 pageable로 받는다.
-    public PageResponse<ReportCostResponse> search(CostDivision division,
-                                                   LocalDate startDate,
-                                                   LocalDate endDate,
-                                                   Pageable pageable) {
+    public PageResponse<ReportCostFindResponse> search(CostDivision division,
+                                                       LocalDate startDate,
+                                                       LocalDate endDate,
+                                                       Pageable pageable) {
         // 기간은 [startDate 00:00, endDate+1 00:00) 으로 끝 날짜를 포함하도록 처리.
         LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime end = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
 
         Long userId = SecurityUtil.getRequiredCurrentUserId();
-        List<ReportCostResponse> content = reportCostRepository.search(division, start, end, pageable, userId);
-        Page<ReportCostResponse> page = PageableExecutionUtils.getPage(
+        List<ReportCostFindResponse> content = reportCostRepository.search(division, start, end, pageable, userId);
+        Page<ReportCostFindResponse> page = PageableExecutionUtils.getPage(
                 content, pageable, () -> reportCostRepository.countSearch(division, start, end, userId));
 
         return PageResponse.from(page);
@@ -85,7 +61,7 @@ public class ReportCostService {
     }
 
     // /calendar : 일별/월별 입금(INCREASE)/출금(DECREASE) costAmount 합산
-    public CalendarCostResponse findCalendar(int year, int month) {
+    public CalendarCostFindResponse findCalendar(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
         // 일자별 그룹핑(달력 순서 유지를 위해 TreeMap)
@@ -95,24 +71,24 @@ public class ReportCostService {
                         TreeMap::new,
                         Collectors.toList()));
 
-        List<CalendarCostResponse.DailySummary> daily = byDate.entrySet().stream()
-                .map(entry -> new CalendarCostResponse.DailySummary(
+        List<CalendarCostFindResponse.DailySummary> daily = byDate.entrySet().stream()
+                .map(entry -> new CalendarCostFindResponse.DailySummary(
                         entry.getKey(),
                         sumIncomeAmount(entry.getValue()),
                         sumExpenseAmount(entry.getValue())))
                 .toList();
 
-        CalendarCostResponse.MonthlySummary monthly = new CalendarCostResponse.MonthlySummary(
+        CalendarCostFindResponse.MonthlySummary monthly = new CalendarCostFindResponse.MonthlySummary(
                 year,
                 month,
                 sumIncomeAmount(costs),
                 sumExpenseAmount(costs));
 
-        return new CalendarCostResponse(daily, monthly);
+        return new CalendarCostFindResponse(daily, monthly);
     }
 
     // /week : 해당 월의 ISO-8601(월요일 시작) 주차별 입금/출금 costAmount 합산
-    public List<WeeklyCostResponse> findWeekly(int year, int month) {
+    public List<WeeklyCostFindResponse> findWeekly(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
         // ISO 주의 월요일을 키로 그룹핑(시간순 정렬을 위해 TreeMap)
@@ -125,7 +101,7 @@ public class ReportCostService {
         return byWeek.entrySet().stream()
                 .map(entry -> {
                     LocalDate monday = entry.getKey();
-                    return new WeeklyCostResponse(
+                    return new WeeklyCostFindResponse(
                             monday.get(WeekFields.ISO.weekBasedYear()),
                             monday.get(WeekFields.ISO.weekOfWeekBasedYear()),
                             monday,
@@ -136,7 +112,7 @@ public class ReportCostService {
     }
 
     // /month : category별 입금/출금 costAmount 합산 목록
-    public List<CategoryCostResponse> findMonthlyByCategory(int year, int month) {
+    public List<CategoryCostFindResponse> findMonthlyByCategory(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
         // 카테고리(RPT_COST_CAT) ID별 그룹핑(ID순 정렬을 위해 TreeMap), 이름은 연관 엔티티에서 가져온다.
@@ -147,12 +123,17 @@ public class ReportCostService {
                         Collectors.toList()));
 
         return byCategory.values().stream()
-                .map(group -> new CategoryCostResponse(
+                .map(group -> new CategoryCostFindResponse(
                         group.get(0).getCategory().getCategoryId(),
                         group.get(0).getCategory().getCategoryName(),
                         sumIncomeAmount(group),
                         sumExpenseAmount(group)))
                 .toList();
+    }
+
+    public ReportCostFindResponse findById(Long id) {
+        return reportCostRepository.findResponseByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
+                .orElseThrow(() -> new EntityNotFoundException("ReportCost not found: " + id));
     }
 
     private List<ReportCost> findByMonthRange(int year, int month) {
@@ -175,52 +156,5 @@ public class ReportCostService {
         return costs.stream()
                 .map(ReportCost::getExpenseAmount)
                 .reduce(BigInteger.ZERO, BigInteger::add);
-    }
-
-    public ReportCostResponse findById(Long id) {
-        return reportCostRepository.findResponseByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
-                .orElseThrow(() -> new EntityNotFoundException("ReportCost not found: " + id));
-    }
-
-    @Transactional
-    public ReportCostResponse update(Long id, ReportCostRequest request) {
-        ReportCost cost = getOrThrow(id);
-        int oldNetPoint = cost.getNormalCostPoint();
-        cost.update(
-                getCategoryOrThrow(request.categoryId()),
-                request.costName(),
-                request.fixedYn(),
-                request.costDescription(),
-                request.amountDivision(),
-                request.costAmount(),
-                request.paymentMethod(),
-                request.paymentAt(),
-                request.costDivision(),
-                request.costPoint()
-        );
-
-        // 조정: 변경된 순포인트 차액만 원장에 기록
-        pointService.recordAdjust(cost.getUserId(), cost.getNormalCostPoint() - oldNetPoint,
-                PointRefType.REPORT_COST, id);
-        return ReportCostResponse.from(cost);
-    }
-
-    @Transactional
-    public void delete(Long id) {
-        ReportCost cost = getOrThrow(id);
-        // 조정: 삭제된 소비의 적립분을 원장에서 차감
-        pointService.recordAdjust(cost.getUserId(), -cost.getNormalCostPoint(),
-                PointRefType.REPORT_COST, id);
-        reportCostRepository.delete(cost);
-    }
-
-    private ReportCost getOrThrow(Long id) {
-        return reportCostRepository.findByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
-                .orElseThrow(() -> new EntityNotFoundException("ReportCost not found: " + id));
-    }
-
-    private CostCategory getCategoryOrThrow(Long categoryId) {
-        return costCategoryRepository.findByIdAndOwner(categoryId, SecurityUtil.getRequiredCurrentUserId())
-                .orElseThrow(() -> new EntityNotFoundException("CostCategory not found: " + categoryId));
     }
 }

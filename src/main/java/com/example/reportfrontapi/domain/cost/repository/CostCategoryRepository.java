@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.cost.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.cost.CostCategory;
-import com.example.reportfrontapi.domain.cost.QCostCategory;
+import com.example.reportfrontapi.domain.cost.model.CostCategory;
+import com.example.reportfrontapi.domain.cost.model.QCostCategory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 

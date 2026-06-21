@@ -1,7 +1,7 @@
 package com.example.reportfrontapi.common.code;
 
-import com.example.reportfrontapi.domain.cost.CostAmountDivision;
-import com.example.reportfrontapi.domain.cost.PaymentMethod;
+import com.example.reportfrontapi.domain.cost.model.CostAmountDivision;
+import com.example.reportfrontapi.domain.cost.model.PaymentMethod;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 

@@ -1,11 +1,11 @@
 package com.example.reportfrontapi.domain.cost.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.cost.CostDivision;
-import com.example.reportfrontapi.domain.cost.QCostCategory;
-import com.example.reportfrontapi.domain.cost.QReportCost;
-import com.example.reportfrontapi.domain.cost.ReportCost;
-import com.example.reportfrontapi.domain.cost.application.ReportCostResponse;
+import com.example.reportfrontapi.domain.cost.model.CostDivision;
+import com.example.reportfrontapi.domain.cost.model.QCostCategory;
+import com.example.reportfrontapi.domain.cost.model.QReportCost;
+import com.example.reportfrontapi.domain.cost.model.ReportCost;
+import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostFindResponse;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -42,9 +42,9 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
     }
 
     // 소유자 + id 단건을 category innerJoin 으로 함께 조회해 응답 DTO로 반환.
-    public Optional<ReportCostResponse> findResponseByIdAndOwner(Long id, Long userId) {
+    public Optional<ReportCostFindResponse> findResponseByIdAndOwner(Long id, Long userId) {
         return Optional.ofNullable(
-                select(ReportCostResponse.class, reportCostProjection())
+                select(ReportCostFindResponse.class, reportCostProjection())
                         .from(cost)
                         .innerJoin(cost.category, category)
                         .where(cost.reportCostId.eq(id), ownerEq(userId))
@@ -63,8 +63,8 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
     }
 
     // 카테고리(RPT_COST_CAT) ID가 일치하는 소유자 소비를 category innerJoin 으로 조회해 응답 DTO로 반환.
-    public List<ReportCostResponse> findByCategoryId(Long categoryId, Long userId) {
-        return select(ReportCostResponse.class, reportCostProjection())
+    public List<ReportCostFindResponse> findByCategoryId(Long categoryId, Long userId) {
+        return select(ReportCostFindResponse.class, reportCostProjection())
                 .from(cost)
                 .innerJoin(cost.category, category)
                 .where(ownerEq(userId), category.categoryId.eq(categoryId))
@@ -75,9 +75,9 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
     // 정렬은 Pageable의 sort로 처리(paymentAt / costPoint / costAmount).
     // 페이지 조립(총건수 결합)은 Service에서 처리하므로 여기서는 현재 페이지 데이터만 반환한다.
     // TODO: 추후 Service 단에서 페이징 처리 이관 고려 필요
-    public List<ReportCostResponse> search(CostDivision division, LocalDateTime start, LocalDateTime end,
+    public List<ReportCostFindResponse> search(CostDivision division, LocalDateTime start, LocalDateTime end,
                                            Pageable pageable, Long userId) {
-        return select(ReportCostResponse.class, reportCostProjection())
+        return select(ReportCostFindResponse.class, reportCostProjection())
                 .from(cost)
                 .innerJoin(cost.category, category)
                 .where(
@@ -124,7 +124,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 .fetchOne();
     }
 
-    // ReportCostResponse 생성자 순서에 맞춘 프로젝션. categoryId/categoryName은 innerJoin한 category에서 가져온다.
+    // ReportCostFindResponse 생성자 순서에 맞춘 프로젝션. categoryId/categoryName은 innerJoin한 category에서 가져온다.
     private Expression<?>[] reportCostProjection() {
         return new Expression<?>[]{
                 cost.reportCostId,

@@ -1,5 +1,7 @@
-package com.example.reportfrontapi.domain.cost;
+package com.example.reportfrontapi.domain.cost.model;
 
+import com.example.reportfrontapi.common.converter.CostAmountDivisionConverter;
+import com.example.reportfrontapi.common.converter.PaymentMethodConverter;
 import com.example.reportfrontapi.common.dto.Yn;
 import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;
