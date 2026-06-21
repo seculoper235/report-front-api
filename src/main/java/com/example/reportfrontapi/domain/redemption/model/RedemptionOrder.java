@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.redemption;
+package com.example.reportfrontapi.domain.redemption.model;
 
 import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;

@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.redemption;
+package com.example.reportfrontapi.domain.redemption.model;
 
 public enum RedemptionStatus {
     ISSUED,     // 지급 완료

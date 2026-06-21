@@ -10,9 +10,9 @@ import com.example.reportfrontapi.domain.product.model.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
 import com.example.reportfrontapi.domain.redemption.OutOfStockException;
-import com.example.reportfrontapi.domain.redemption.RedemptionOrder;
-import com.example.reportfrontapi.domain.redemption.RedemptionStatus;
-import com.example.reportfrontapi.domain.redemption.application.dto.RedemptionResponse;
+import com.example.reportfrontapi.domain.redemption.model.RedemptionOrder;
+import com.example.reportfrontapi.domain.redemption.model.RedemptionStatus;
+import com.example.reportfrontapi.domain.redemption.controller.dto.RedemptionCreateResponse;
 import com.example.reportfrontapi.domain.redemption.repository.RedemptionOrderRepository;
 import com.example.reportfrontapi.domain.user.model.Role;
 import com.example.reportfrontapi.domain.user.model.User;
@@ -45,7 +45,7 @@ class RedemptionServiceTest {
     @Mock private StorageService storageService;
 
     @InjectMocks
-    private RedemptionService redemptionService;
+    private RedemptionCreateService redemptionService;
 
     private Product product(int pointCost) {
         return Product.builder().productId(10L).name("스타벅스").pointCost(pointCost).active(true).build();
@@ -71,7 +71,7 @@ class RedemptionServiceTest {
         given(redemptionOrderRepository.save(ArgumentMatchers.any(RedemptionOrder.class)))
                 .willReturn(savedOrder());
 
-        RedemptionResponse response = redemptionService.redeem(1L, 10L, "idem-1");
+        RedemptionCreateResponse response = redemptionService.redeem(1L, 10L, "idem-1");
 
         assertThat(response.orderId()).isEqualTo(5L);
         assertThat(response.pointCost()).isEqualTo(100);
@@ -89,7 +89,7 @@ class RedemptionServiceTest {
         given(giftInventoryRepository.findById(99L)).willReturn(Optional.of(
                 GiftInventory.of(10L, "GIFT-CODE-XYZ", null, null)));
 
-        RedemptionResponse response = redemptionService.redeem(1L, 10L, "idem-1");
+        RedemptionCreateResponse response = redemptionService.redeem(1L, 10L, "idem-1");
 
         assertThat(response.orderId()).isEqualTo(5L);
         verify(userRepository, never()).findByIdForUpdate(ArgumentMatchers.anyLong());

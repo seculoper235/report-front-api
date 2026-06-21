@@ -9,8 +9,8 @@ import com.example.reportfrontapi.domain.product.model.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
 import com.example.reportfrontapi.domain.redemption.OutOfStockException;
-import com.example.reportfrontapi.domain.redemption.RedemptionOrder;
-import com.example.reportfrontapi.domain.redemption.application.dto.RedemptionResponse;
+import com.example.reportfrontapi.domain.redemption.controller.dto.RedemptionCreateResponse;
+import com.example.reportfrontapi.domain.redemption.model.RedemptionOrder;
 import com.example.reportfrontapi.domain.redemption.repository.RedemptionOrderRepository;
 import com.example.reportfrontapi.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,12 +18,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class RedemptionService {
+public class RedemptionCreateService {
 
     private final ProductRepository productRepository;
     private final GiftInventoryRepository giftInventoryRepository;
@@ -35,7 +33,7 @@ public class RedemptionService {
 
     // 교환 처리: 멱등 체크 → 잔액 잠금/검증 → 재고 코드 pop → 차감 주문 생성. (정책 a: 재고 0이면 차감 없이 실패)
     @Transactional
-    public RedemptionResponse redeem(Long userId, Long productId, String idempotencyKey) {
+    public RedemptionCreateResponse redeem(Long userId, Long productId, String idempotencyKey) {
         // 1. 멱등 체크: 이미 처리된 주문이면 그대로 반환(중복 차감 방지)
         var existing = redemptionOrderRepository.findByIdempotencyKey(idempotencyKey);
         if (existing.isPresent()) {
@@ -72,13 +70,7 @@ public class RedemptionService {
         return responseOf(order, product, inventory);
     }
 
-    public List<RedemptionResponse> findHistory(Long userId) {
-        return redemptionOrderRepository.findByUserId(userId).stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    private RedemptionResponse toResponse(RedemptionOrder order) {
+    private RedemptionCreateResponse toResponse(RedemptionOrder order) {
         Product product = productRepository.findById(order.getProductId()).orElse(null);
         GiftInventory inventory = order.getGiftInventoryId() != null
                 ? giftInventoryRepository.findById(order.getGiftInventoryId()).orElse(null)
@@ -86,8 +78,8 @@ public class RedemptionService {
         return responseOf(order, product, inventory);
     }
 
-    private RedemptionResponse responseOf(RedemptionOrder order, Product product, GiftInventory inventory) {
-        return new RedemptionResponse(
+    private RedemptionCreateResponse responseOf(RedemptionOrder order, Product product, GiftInventory inventory) {
+        return new RedemptionCreateResponse(
                 order.getRedemptionOrderId(),
                 order.getProductId(),
                 product != null ? product.getName() : null,

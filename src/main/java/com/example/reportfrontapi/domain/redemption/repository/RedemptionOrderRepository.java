@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.redemption.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.redemption.QRedemptionOrder;
-import com.example.reportfrontapi.domain.redemption.RedemptionOrder;
+import com.example.reportfrontapi.domain.redemption.model.QRedemptionOrder;
+import com.example.reportfrontapi.domain.redemption.model.RedemptionOrder;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 

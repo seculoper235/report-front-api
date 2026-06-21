@@ -1,9 +1,9 @@
-package com.example.reportfrontapi.domain.redemption.application.dto;
+package com.example.reportfrontapi.domain.redemption.controller.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public record RedemptionResponse(
+public record RedemptionFindResponse(
         Long orderId,
         Long productId,
         String productName,

@@ -1,9 +1,9 @@
-package com.example.reportfrontapi.domain.redemption.application.dto;
+package com.example.reportfrontapi.domain.redemption.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record RedeemRequest(
+public record RedeemCreateRequest(
         @NotNull Long productId,
         @NotBlank String idempotencyKey
 ) {
