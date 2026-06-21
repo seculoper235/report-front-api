@@ -2,6 +2,7 @@ package com.example.reportfrontapi.common.repository;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -63,6 +64,15 @@ public abstract class BaseRepository<T, ID> {
 
     protected <R> JPAQuery<R> select(Expression<R> expr) {
         return queryFactory.select(expr);
+    }
+
+    /**
+     * DTO 생성자 프로젝션. 전달한 표현식 순서대로 type의 생성자(레코드 포함)에 매핑된다.
+     * 예) select(ReportCostResponse.class, cost.reportCostId, category.categoryId, ...)
+     *         .from(cost).innerJoin(cost.category, category).fetch();
+     */
+    protected <R> JPAQuery<R> select(Class<R> type, Expression<?>... exprs) {
+        return queryFactory.select(Projections.constructor(type, exprs));
     }
 
     protected <R> JPAQuery<R> selectFrom(EntityPath<R> from) {
