@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.redemption.application;
 
 import com.example.reportfrontapi.common.storage.StorageService;
-import com.example.reportfrontapi.domain.gift.GiftInventory;
-import com.example.reportfrontapi.domain.gift.GiftInventoryStatus;
+import com.example.reportfrontapi.domain.gift.model.GiftInventory;
+import com.example.reportfrontapi.domain.gift.model.GiftInventoryStatus;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
 import com.example.reportfrontapi.domain.point.application.PointService;
 import com.example.reportfrontapi.domain.product.Product;

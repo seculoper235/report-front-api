@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.gift;
+package com.example.reportfrontapi.domain.gift.model;
 
 public enum GiftInventoryStatus {
     AVAILABLE,  // 미사용(지급 가능)

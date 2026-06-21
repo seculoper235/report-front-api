@@ -1,9 +1,9 @@
 package com.example.reportfrontapi.domain.gift.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.gift.GiftInventory;
-import com.example.reportfrontapi.domain.gift.GiftInventoryStatus;
-import com.example.reportfrontapi.domain.gift.QGiftInventory;
+import com.example.reportfrontapi.domain.gift.model.GiftInventory;
+import com.example.reportfrontapi.domain.gift.model.GiftInventoryStatus;
+import com.example.reportfrontapi.domain.gift.model.QGiftInventory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Repository;

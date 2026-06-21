@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.gift;
+package com.example.reportfrontapi.domain.gift.model;
 
 import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;

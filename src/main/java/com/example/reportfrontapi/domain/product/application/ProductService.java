@@ -1,6 +1,6 @@
 package com.example.reportfrontapi.domain.product.application;
 
-import com.example.reportfrontapi.domain.gift.GiftInventory;
+import com.example.reportfrontapi.domain.gift.model.GiftInventory;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
 import com.example.reportfrontapi.domain.product.Product;
 import com.example.reportfrontapi.domain.product.application.dto.CodeLoadRequest;
