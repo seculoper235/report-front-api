@@ -5,7 +5,7 @@ import com.example.reportfrontapi.domain.gift.model.GiftInventory;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
 import com.example.reportfrontapi.domain.point.application.PointCreateService;
 import com.example.reportfrontapi.domain.point.application.PointFindService;
-import com.example.reportfrontapi.domain.product.Product;
+import com.example.reportfrontapi.domain.product.model.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
 import com.example.reportfrontapi.domain.redemption.OutOfStockException;

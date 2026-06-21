@@ -1,9 +1,9 @@
 package com.example.reportfrontapi.domain.product.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
-import com.example.reportfrontapi.domain.product.application.ProductService;
-import com.example.reportfrontapi.domain.product.application.dto.CodeLoadRequest;
-import com.example.reportfrontapi.domain.product.application.dto.ProductCreateRequest;
+import com.example.reportfrontapi.domain.product.application.ProductCreateService;
+import com.example.reportfrontapi.domain.product.controller.dto.CodeLoadCreateRequest;
+import com.example.reportfrontapi.domain.product.controller.dto.ProductCreateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,18 +17,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdminProductController {
 
-    private final ProductService productService;
+    private final ProductCreateService productCreateService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Long> create(@Valid @RequestBody ProductCreateRequest request) {
-        return ApiResponse.success(productService.create(request));
+        return ApiResponse.success(productCreateService.create(request));
     }
 
     // 코드 재고 적재. 적재된 코드 수 반환.
     @PostMapping("/{id}/codes")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Integer> addCodes(@PathVariable Long id, @Valid @RequestBody CodeLoadRequest request) {
-        return ApiResponse.success(productService.addCodes(id, request));
+    public ApiResponse<Integer> addCodes(@PathVariable Long id, @Valid @RequestBody CodeLoadCreateRequest request) {
+        return ApiResponse.success(productCreateService.addCodes(id, request));
     }
 }

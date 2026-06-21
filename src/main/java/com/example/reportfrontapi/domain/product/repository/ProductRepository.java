@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.product.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.product.Product;
-import com.example.reportfrontapi.domain.product.QProduct;
+import com.example.reportfrontapi.domain.product.model.Product;
+import com.example.reportfrontapi.domain.product.model.QProduct;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 

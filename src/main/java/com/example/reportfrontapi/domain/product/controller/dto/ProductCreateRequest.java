@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.product.application.dto;
+package com.example.reportfrontapi.domain.product.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
