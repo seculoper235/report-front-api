@@ -1,6 +1,6 @@
 package com.example.reportfrontapi.web.security;
 
-import com.example.reportfrontapi.domain.user.Role;
+import com.example.reportfrontapi.domain.user.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

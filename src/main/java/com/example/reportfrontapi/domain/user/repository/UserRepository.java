@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.user.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.user.QUser;
-import com.example.reportfrontapi.domain.user.User;
+import com.example.reportfrontapi.domain.user.model.QUser;
+import com.example.reportfrontapi.domain.user.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Repository;
