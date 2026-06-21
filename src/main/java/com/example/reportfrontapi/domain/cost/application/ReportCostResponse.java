@@ -26,8 +26,8 @@ public record ReportCostResponse(
     public static ReportCostResponse from(ReportCost cost) {
         return new ReportCostResponse(
                 cost.getReportCostId(),
-                cost.getCategoryId(),
-                cost.getCategoryName(),
+                cost.getCategory().getCategoryId(),
+                cost.getCategory().getCategoryName(),
                 cost.getCostName(),
                 cost.getFixedYn(),
                 cost.getCostDescription(),

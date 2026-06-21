@@ -58,15 +58,6 @@ public class ReportCost extends BaseEntity {
     @Column(name = "cost_pnt")
     private Integer costPoint;    // 소비 포인트
 
-    // 카테고리 식별자/이름은 연관된 RPT_COST_CAT 에서 가져온다.
-    public Long getCategoryId() {
-        return category != null ? category.getCategoryId() : null;
-    }
-
-    public String getCategoryName() {
-        return category != null ? category.getCategoryName() : null;
-    }
-
     public Integer getCostPoint() {
         if (costDivision == null || costPoint == null) {
             return 0;

@@ -58,9 +58,7 @@ public class ReportCostService {
     }
 
     public List<ReportCostResponse> findAll(Long categoryId) {
-        return reportCostRepository.findByCategoryId(categoryId, SecurityUtil.getRequiredCurrentUserId()).stream()
-                .map(ReportCostResponse::from)
-                .toList();
+        return reportCostRepository.findByCategoryId(categoryId, SecurityUtil.getRequiredCurrentUserId());
     }
 
     // 소비 내역 무한 스크롤 조회. division/기간은 옵션, 정렬은 pageable로 받는다.
@@ -73,11 +71,11 @@ public class ReportCostService {
         LocalDateTime end = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
 
         Long userId = SecurityUtil.getRequiredCurrentUserId();
-        List<ReportCost> content = reportCostRepository.search(division, start, end, pageable, userId);
-        Page<ReportCost> page = PageableExecutionUtils.getPage(
+        List<ReportCostResponse> content = reportCostRepository.search(division, start, end, pageable, userId);
+        Page<ReportCostResponse> page = PageableExecutionUtils.getPage(
                 content, pageable, () -> reportCostRepository.countSearch(division, start, end, userId));
 
-        return PageResponse.from(page.map(ReportCostResponse::from));
+        return PageResponse.from(page);
     }
 
     // 전체 순포인트 합계(GOOD +, BAD -). 메인 화면 헤더에 표시. 집계 대상이 없으면 0.
@@ -144,14 +142,14 @@ public class ReportCostService {
         // 카테고리(RPT_COST_CAT) ID별 그룹핑(ID순 정렬을 위해 TreeMap), 이름은 연관 엔티티에서 가져온다.
         Map<Long, List<ReportCost>> byCategory = costs.stream()
                 .collect(Collectors.groupingBy(
-                        ReportCost::getCategoryId,
+                        cost -> cost.getCategory().getCategoryId(),
                         TreeMap::new,
                         Collectors.toList()));
 
         return byCategory.values().stream()
                 .map(group -> new CategoryCostResponse(
-                        group.get(0).getCategoryId(),
-                        group.get(0).getCategoryName(),
+                        group.get(0).getCategory().getCategoryId(),
+                        group.get(0).getCategory().getCategoryName(),
                         sumIncomeAmount(group),
                         sumExpenseAmount(group)))
                 .toList();
@@ -180,7 +178,8 @@ public class ReportCostService {
     }
 
     public ReportCostResponse findById(Long id) {
-        return ReportCostResponse.from(getOrThrow(id));
+        return reportCostRepository.findResponseByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
+                .orElseThrow(() -> new EntityNotFoundException("ReportCost not found: " + id));
     }
 
     @Transactional
