@@ -1,9 +1,9 @@
 package com.example.reportfrontapi.domain.point.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
-import com.example.reportfrontapi.domain.point.application.PointBalanceResponse;
-import com.example.reportfrontapi.domain.point.application.PointLedgerResponse;
-import com.example.reportfrontapi.domain.point.application.PointService;
+import com.example.reportfrontapi.domain.point.application.PointFindService;
+import com.example.reportfrontapi.domain.point.controller.dto.PointBalanceFindResponse;
+import com.example.reportfrontapi.domain.point.controller.dto.PointLedgerFindResponse;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,18 +17,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PointController {
 
-    private final PointService pointService;
+    private final PointFindService pointFindService;
 
     // 교환 차감이 반영된 현재 포인트 잔액.
     @GetMapping("/balance")
-    public ApiResponse<PointBalanceResponse> getBalance() {
-        int balance = pointService.getBalance(SecurityUtil.getRequiredCurrentUserId());
-        return ApiResponse.success(new PointBalanceResponse(balance));
+    public ApiResponse<PointBalanceFindResponse> getBalance() {
+        int balance = pointFindService.getBalance(SecurityUtil.getRequiredCurrentUserId());
+        return ApiResponse.success(new PointBalanceFindResponse(balance));
     }
 
     // 적립/차감/조정 원장 내역(최신순).
     @GetMapping("/ledger")
-    public ApiResponse<List<PointLedgerResponse>> getLedger() {
-        return ApiResponse.success(pointService.getLedger(SecurityUtil.getRequiredCurrentUserId()));
+    public ApiResponse<List<PointLedgerFindResponse>> getLedger() {
+        return ApiResponse.success(pointFindService.getLedger(SecurityUtil.getRequiredCurrentUserId()));
     }
 }

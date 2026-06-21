@@ -1,9 +1,9 @@
 package com.example.reportfrontapi.domain.point.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.point.PointAmountDivision;
-import com.example.reportfrontapi.domain.point.QReportPoint;
-import com.example.reportfrontapi.domain.point.ReportPoint;
+import com.example.reportfrontapi.domain.point.model.PointAmountDivision;
+import com.example.reportfrontapi.domain.point.model.QReportPoint;
+import com.example.reportfrontapi.domain.point.model.ReportPoint;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import jakarta.persistence.EntityManager;

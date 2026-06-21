@@ -2,10 +2,10 @@ package com.example.reportfrontapi.domain.auth.controller;
 
 import com.example.reportfrontapi.common.response.ApiResponse;
 import com.example.reportfrontapi.domain.auth.application.AuthService;
-import com.example.reportfrontapi.domain.auth.application.dto.LoginRequest;
-import com.example.reportfrontapi.domain.auth.application.dto.ReissueRequest;
-import com.example.reportfrontapi.domain.auth.application.dto.SignupRequest;
-import com.example.reportfrontapi.domain.auth.application.dto.TokenResponse;
+import com.example.reportfrontapi.domain.auth.controller.dto.LoginRequest;
+import com.example.reportfrontapi.domain.auth.controller.dto.ReissueRequest;
+import com.example.reportfrontapi.domain.auth.controller.dto.SignupRequest;
+import com.example.reportfrontapi.domain.auth.controller.dto.TokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

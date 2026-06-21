@@ -1,7 +1,7 @@
 package com.example.reportfrontapi.web.security;
 
 import com.example.reportfrontapi.domain.auth.application.AccessTokenBlacklistService;
-import com.example.reportfrontapi.domain.user.Role;
+import com.example.reportfrontapi.domain.user.model.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

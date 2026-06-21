@@ -420,3 +420,112 @@ databaseChangeLog:
                      now(), "user_id", now(), "user_id"
               FROM "rpt_cost"
               WHERE "cost_dvsn" IS NOT NULL AND "cost_pnt" IS NOT NULL;
+  - changeSet:
+      id: create-cost-category
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: rpt_cost_cat
+            columns:
+              - column:
+                  name: rpt_cost_category_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cat_nm
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - createIndex:
+            tableName: rpt_cost_cat
+            indexName: idx_cost_cat_user
+            columns:
+              - column:
+                  name: user_id
+  - changeSet:
+      id: link-cost-to-category
+      author: DevTeller
+      changes:
+        # 기존 소비의 (user_id, cat_nm) 조합으로 카테고리를 backfill 한다.
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              INSERT INTO "rpt_cost_cat" ("user_id", "cat_nm", "crt_at", "crt_by", "udt_at", "udt_by")
+              SELECT DISTINCT "user_id", "cat_nm", now(), "user_id", now(), "user_id"
+              FROM "rpt_cost";
+        - addColumn:
+            tableName: rpt_cost
+            columns:
+              - column:
+                  name: rpt_cost_category_id
+                  type: bigint
+        # 방금 만든 카테고리를 (user_id, cat_nm) 기준으로 소비 행에 연결한다.
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              UPDATE "rpt_cost"
+              SET "rpt_cost_category_id" = (
+                SELECT "cat"."rpt_cost_category_id"
+                FROM "rpt_cost_cat" "cat"
+                WHERE "cat"."user_id" = "rpt_cost"."user_id"
+                  AND "cat"."cat_nm" = "rpt_cost"."cat_nm"
+              );
+        - addNotNullConstraint:
+            tableName: rpt_cost
+            columnName: rpt_cost_category_id
+            columnDataType: bigint
+            defaultNullValue: 0
+        - dropColumn:
+            tableName: rpt_cost
+            columnName: cat_nm
+  - changeSet:
+      id: add-cost-category-color
+      author: DevTeller
+      changes:
+        - addColumn:
+            tableName: rpt_cost_cat
+            columns:
+              - column:
+                  name: cat_color
+                  type: varchar(7)
+        # 기존 카테고리에 유저별 순번(자기보다 작은 id 개수) % 12 로 팔레트 색을 분산 배정한다.
+        # (S=0.5, V=0.82 HSV 휠을 30°씩 돌린 색 — 신규 생성 색과 톤이 일치)
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              UPDATE "rpt_cost_cat" c
+              SET "cat_color" = CASE ((
+                  SELECT COUNT(*) FROM "rpt_cost_cat" c2
+                  WHERE c2."user_id" = c."user_id"
+                    AND c2."rpt_cost_category_id" < c."rpt_cost_category_id"
+                ) % 12)
+                WHEN 0 THEN '#D16969'
+                WHEN 1 THEN '#D19D69'
+                WHEN 2 THEN '#D1D169'
+                WHEN 3 THEN '#9DD169'
+                WHEN 4 THEN '#69D169'
+                WHEN 5 THEN '#69D19D'
+                WHEN 6 THEN '#69D1D1'
+                WHEN 7 THEN '#699DD1'
+                WHEN 8 THEN '#6969D1'
+                WHEN 9 THEN '#9D69D1'
+                WHEN 10 THEN '#D169D1'
+                ELSE '#D1699D'
+              END;
+        - addNotNullConstraint:
+            tableName: rpt_cost_cat
+            columnName: cat_color
+            columnDataType: varchar(7)
+            defaultNullValue: '#9B70D0'

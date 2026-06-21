@@ -1,7 +1,7 @@
 package com.example.reportfrontapi.common.code;
 
-import com.example.reportfrontapi.domain.cost.CostAmountDivision;
-import com.example.reportfrontapi.domain.cost.PaymentMethod;
+import com.example.reportfrontapi.domain.cost.model.CostAmountDivision;
+import com.example.reportfrontapi.domain.cost.model.PaymentMethod;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -13,14 +13,14 @@ class CodeEnumJsonTest {
     @Test
     void serializesUsingCode() throws Exception {
         assertThat(objectMapper.writeValueAsString(CostAmountDivision.INCREASE))
-                .isEqualTo("\"RP010001\"");
+                .isEqualTo("\"RP020001\"");
         assertThat(objectMapper.writeValueAsString(PaymentMethod.CARD))
                 .isEqualTo("\"RP010002\"");
     }
 
     @Test
     void deserializesUsingCode() throws Exception {
-        assertThat(objectMapper.readValue("\"RP010002\"", CostAmountDivision.class))
+        assertThat(objectMapper.readValue("\"RP020002\"", CostAmountDivision.class))
                 .isEqualTo(CostAmountDivision.DECREASE);
         assertThat(objectMapper.readValue("\"RP010003\"", PaymentMethod.class))
                 .isEqualTo(PaymentMethod.CREDIT_CARD);

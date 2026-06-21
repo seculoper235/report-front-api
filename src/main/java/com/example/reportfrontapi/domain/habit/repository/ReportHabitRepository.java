@@ -1,8 +1,8 @@
 package com.example.reportfrontapi.domain.habit.repository;
 
 import com.example.reportfrontapi.common.repository.BaseRepository;
-import com.example.reportfrontapi.domain.habit.QReportHabit;
-import com.example.reportfrontapi.domain.habit.ReportHabit;
+import com.example.reportfrontapi.domain.habit.model.QReportHabit;
+import com.example.reportfrontapi.domain.habit.model.ReportHabit;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
