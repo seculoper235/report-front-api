@@ -23,8 +23,9 @@ public class ReportCost extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;    // 소유 사용자 ID (FK 아님)
 
-    @Column(name = "cat_nm", length = 20, nullable = false)
-    private String categoryName;    // 카테고리 이름
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rpt_cost_category_id", nullable = false)
+    private CostCategory category;    // 카테고리 (RPT_COST_CAT)
 
     @Column(name = "cost_nm", length = 20, nullable = false)
     private String costName;    // 코스트 이름
@@ -57,6 +58,15 @@ public class ReportCost extends BaseEntity {
     @Column(name = "cost_pnt")
     private Integer costPoint;    // 소비 포인트
 
+    // 카테고리 식별자/이름은 연관된 RPT_COST_CAT 에서 가져온다.
+    public Long getCategoryId() {
+        return category != null ? category.getCategoryId() : null;
+    }
+
+    public String getCategoryName() {
+        return category != null ? category.getCategoryName() : null;
+    }
+
     public Integer getCostPoint() {
         if (costDivision == null || costPoint == null) {
             return 0;
@@ -87,10 +97,10 @@ public class ReportCost extends BaseEntity {
         return CostAmountDivision.DECREASE.equals(amountDivision) ? costAmount : BigInteger.ZERO;
     }
 
-    public void update(String categoryName, String costName, Yn fixedYn, String costDescription,
+    public void update(CostCategory category, String costName, Yn fixedYn, String costDescription,
                        CostAmountDivision amountDivision, BigInteger costAmount, PaymentMethod paymentMethod,
                        LocalDateTime paymentAt, CostDivision costDivision, Integer costPoint) {
-        this.categoryName = categoryName;
+        this.category = category;
         this.costName = costName;
         this.fixedYn = fixedYn;
         this.costDescription = costDescription;

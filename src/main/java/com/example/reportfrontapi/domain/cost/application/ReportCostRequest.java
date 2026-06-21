@@ -11,8 +11,8 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 public record ReportCostRequest(
-        @NotBlank
-        String categoryName,         // 카테고리 이름
+        @NotNull
+        Long categoryId,             // 카테고리 ID (RPT_COST_CAT)
         @NotBlank
         String costName,             // 코스트 이름
         @NotNull

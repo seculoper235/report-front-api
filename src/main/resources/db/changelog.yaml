@@ -420,3 +420,73 @@ databaseChangeLog:
                      now(), "user_id", now(), "user_id"
               FROM "rpt_cost"
               WHERE "cost_dvsn" IS NOT NULL AND "cost_pnt" IS NOT NULL;
+  - changeSet:
+      id: create-cost-category
+      author: DevTeller
+      changes:
+        - createTable:
+            tableName: rpt_cost_cat
+            columns:
+              - column:
+                  name: rpt_cost_category_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cat_nm
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - createIndex:
+            tableName: rpt_cost_cat
+            indexName: idx_cost_cat_user
+            columns:
+              - column:
+                  name: user_id
+  - changeSet:
+      id: link-cost-to-category
+      author: DevTeller
+      changes:
+        # 기존 소비의 (user_id, cat_nm) 조합으로 카테고리를 backfill 한다.
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              INSERT INTO "rpt_cost_cat" ("user_id", "cat_nm", "crt_at", "crt_by", "udt_at", "udt_by")
+              SELECT DISTINCT "user_id", "cat_nm", now(), "user_id", now(), "user_id"
+              FROM "rpt_cost";
+        - addColumn:
+            tableName: rpt_cost
+            columns:
+              - column:
+                  name: rpt_cost_category_id
+                  type: bigint
+        # 방금 만든 카테고리를 (user_id, cat_nm) 기준으로 소비 행에 연결한다.
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              UPDATE "rpt_cost"
+              SET "rpt_cost_category_id" = (
+                SELECT "cat"."rpt_cost_category_id"
+                FROM "rpt_cost_cat" "cat"
+                WHERE "cat"."user_id" = "rpt_cost"."user_id"
+                  AND "cat"."cat_nm" = "rpt_cost"."cat_nm"
+              );
+        - addNotNullConstraint:
+            tableName: rpt_cost
+            columnName: rpt_cost_category_id
+            columnDataType: bigint
+            defaultNullValue: 0
+        - dropColumn:
+            tableName: rpt_cost
+            columnName: cat_nm

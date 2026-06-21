@@ -34,8 +34,8 @@ public class ReportCostController {
     }
 
     @GetMapping
-    public ApiResponse<List<ReportCostResponse>> findAll(@RequestParam String category) {
-        return ApiResponse.success(reportCostService.findAll(category));
+    public ApiResponse<List<ReportCostResponse>> findAll(@RequestParam Long categoryId) {
+        return ApiResponse.success(reportCostService.findAll(categoryId));
     }
 
     // 소비 내역 무한 스크롤 조회.

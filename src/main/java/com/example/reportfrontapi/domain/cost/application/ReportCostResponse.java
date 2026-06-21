@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 public record ReportCostResponse(
         Long reportCostId,           // 레포트 코스트 일련번호
+        Long categoryId,             // 카테고리 ID
         String categoryName,         // 카테고리 이름
         String costName,             // 코스트 이름
         Yn fixedYn,                  // 고정 지출 여부
@@ -25,6 +26,7 @@ public record ReportCostResponse(
     public static ReportCostResponse from(ReportCost cost) {
         return new ReportCostResponse(
                 cost.getReportCostId(),
+                cost.getCategoryId(),
                 cost.getCategoryName(),
                 cost.getCostName(),
                 cost.getFixedYn(),

@@ -1,8 +1,10 @@
 package com.example.reportfrontapi.domain.cost.application;
 
 import com.example.reportfrontapi.common.response.PageResponse;
+import com.example.reportfrontapi.domain.cost.CostCategory;
 import com.example.reportfrontapi.domain.cost.CostDivision;
 import com.example.reportfrontapi.domain.cost.ReportCost;
+import com.example.reportfrontapi.domain.cost.repository.CostCategoryRepository;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
 import com.example.reportfrontapi.domain.point.PointRefType;
 import com.example.reportfrontapi.domain.point.application.PointService;
@@ -30,13 +32,14 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ReportCostService {
     private final ReportCostRepository reportCostRepository;
+    private final CostCategoryRepository costCategoryRepository;
     private final PointService pointService;
 
     @Transactional
     public ReportCostResponse create(ReportCostRequest request) {
         ReportCost cost = ReportCost.builder()
                 .userId(SecurityUtil.getRequiredCurrentUserId())
-                .categoryName(request.categoryName())
+                .category(getCategoryOrThrow(request.categoryId()))
                 .costName(request.costName())
                 .fixedYn(request.fixedYn())
                 .costDescription(request.costDescription())
@@ -54,8 +57,8 @@ public class ReportCostService {
         return ReportCostResponse.from(saved);
     }
 
-    public List<ReportCostResponse> findAll(String category) {
-        return reportCostRepository.findByCategoryName(category, SecurityUtil.getRequiredCurrentUserId()).stream()
+    public List<ReportCostResponse> findAll(Long categoryId) {
+        return reportCostRepository.findByCategoryId(categoryId, SecurityUtil.getRequiredCurrentUserId()).stream()
                 .map(ReportCostResponse::from)
                 .toList();
     }
@@ -138,18 +141,19 @@ public class ReportCostService {
     public List<CategoryCostResponse> findMonthlyByCategory(int year, int month) {
         List<ReportCost> costs = findByMonthRange(year, month);
 
-        // 카테고리별 그룹핑(이름순 정렬을 위해 TreeMap)
-        Map<String, List<ReportCost>> byCategory = costs.stream()
+        // 카테고리(RPT_COST_CAT) ID별 그룹핑(ID순 정렬을 위해 TreeMap), 이름은 연관 엔티티에서 가져온다.
+        Map<Long, List<ReportCost>> byCategory = costs.stream()
                 .collect(Collectors.groupingBy(
-                        ReportCost::getCategoryName,
+                        ReportCost::getCategoryId,
                         TreeMap::new,
                         Collectors.toList()));
 
-        return byCategory.entrySet().stream()
-                .map(entry -> new CategoryCostResponse(
-                        entry.getKey(),
-                        sumIncomeAmount(entry.getValue()),
-                        sumExpenseAmount(entry.getValue())))
+        return byCategory.values().stream()
+                .map(group -> new CategoryCostResponse(
+                        group.get(0).getCategoryId(),
+                        group.get(0).getCategoryName(),
+                        sumIncomeAmount(group),
+                        sumExpenseAmount(group)))
                 .toList();
     }
 
@@ -184,7 +188,7 @@ public class ReportCostService {
         ReportCost cost = getOrThrow(id);
         int oldNetPoint = cost.getNormalCostPoint();
         cost.update(
-                request.categoryName(),
+                getCategoryOrThrow(request.categoryId()),
                 request.costName(),
                 request.fixedYn(),
                 request.costDescription(),
@@ -214,5 +218,10 @@ public class ReportCostService {
     private ReportCost getOrThrow(Long id) {
         return reportCostRepository.findByIdAndOwner(id, SecurityUtil.getRequiredCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("ReportCost not found: " + id));
+    }
+
+    private CostCategory getCategoryOrThrow(Long categoryId) {
+        return costCategoryRepository.findByIdAndOwner(categoryId, SecurityUtil.getRequiredCurrentUserId())
+                .orElseThrow(() -> new EntityNotFoundException("CostCategory not found: " + categoryId));
     }
 }

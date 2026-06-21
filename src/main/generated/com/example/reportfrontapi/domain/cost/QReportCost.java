@@ -9,6 +9,7 @@ import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.core.types.PathMetadata;
 import com.querydsl.core.annotations.Generated;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -20,13 +21,15 @@ public class QReportCost extends EntityPathBase<ReportCost> {
 
     private static final long serialVersionUID = 539064112L;
 
+    private static final PathInits INITS = PathInits.DIRECT2;
+
     public static final QReportCost reportCost = new QReportCost("reportCost");
 
     public final com.example.reportfrontapi.common.entity.QBaseEntity _super = new com.example.reportfrontapi.common.entity.QBaseEntity(this);
 
     public final EnumPath<CostAmountDivision> amountDivision = createEnum("amountDivision", CostAmountDivision.class);
 
-    public final StringPath categoryName = createString("categoryName");
+    public final QCostCategory category;
 
     public final NumberPath<java.math.BigInteger> costAmount = createNumber("costAmount", java.math.BigInteger.class);
 
@@ -61,15 +64,24 @@ public class QReportCost extends EntityPathBase<ReportCost> {
     public final NumberPath<Long> userId = createNumber("userId", Long.class);
 
     public QReportCost(String variable) {
-        super(ReportCost.class, forVariable(variable));
+        this(ReportCost.class, forVariable(variable), INITS);
     }
 
     public QReportCost(Path<? extends ReportCost> path) {
-        super(path.getType(), path.getMetadata());
+        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
     public QReportCost(PathMetadata metadata) {
-        super(ReportCost.class, metadata);
+        this(metadata, PathInits.getFor(metadata, INITS));
+    }
+
+    public QReportCost(PathMetadata metadata, PathInits inits) {
+        this(ReportCost.class, metadata, inits);
+    }
+
+    public QReportCost(Class<? extends ReportCost> type, PathMetadata metadata, PathInits inits) {
+        super(type, metadata, inits);
+        this.category = inits.isInitialized("category") ? new QCostCategory(forProperty("category")) : null;
     }
 
 }

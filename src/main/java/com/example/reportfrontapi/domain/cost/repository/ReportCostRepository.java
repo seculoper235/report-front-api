@@ -47,10 +47,10 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 .fetch();
     }
 
-    // 카테고리 이름이 일치하는 소유자 소비 조회.
-    public List<ReportCost> findByCategoryName(String categoryName, Long userId) {
+    // 카테고리(RPT_COST_CAT) ID가 일치하는 소유자 소비 조회.
+    public List<ReportCost> findByCategoryId(Long categoryId, Long userId) {
         return selectFrom(cost)
-                .where(ownerEq(userId), cost.categoryName.eq(categoryName))
+                .where(ownerEq(userId), cost.category.categoryId.eq(categoryId))
                 .fetch();
     }
 
