@@ -3,7 +3,8 @@ package com.example.reportfrontapi.domain.redemption.application;
 import com.example.reportfrontapi.common.storage.StorageService;
 import com.example.reportfrontapi.domain.gift.model.GiftInventory;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
-import com.example.reportfrontapi.domain.point.application.PointService;
+import com.example.reportfrontapi.domain.point.application.PointCreateService;
+import com.example.reportfrontapi.domain.point.application.PointFindService;
 import com.example.reportfrontapi.domain.product.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
@@ -27,7 +28,8 @@ public class RedemptionService {
     private final ProductRepository productRepository;
     private final GiftInventoryRepository giftInventoryRepository;
     private final RedemptionOrderRepository redemptionOrderRepository;
-    private final PointService pointService;
+    private final PointFindService pointFindService;
+    private final PointCreateService pointCreateService;
     private final UserRepository userRepository;
     private final StorageService storageService;
 
@@ -49,7 +51,7 @@ public class RedemptionService {
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + productId));
 
         // 4. 잔액 검증
-        int balance = pointService.getBalance(userId);
+        int balance = pointFindService.getBalance(userId);
         if (balance < product.getPointCost()) {
             throw new InsufficientPointException(balance, product.getPointCost());
         }
@@ -65,7 +67,7 @@ public class RedemptionService {
         inventory.issueTo(order.getRedemptionOrderId());
 
         // 7. 원장에 차감 기록
-        pointService.recordRedeem(userId, product.getPointCost(), order.getRedemptionOrderId());
+        pointCreateService.recordRedeem(userId, product.getPointCost(), order.getRedemptionOrderId());
 
         return responseOf(order, product, inventory);
     }

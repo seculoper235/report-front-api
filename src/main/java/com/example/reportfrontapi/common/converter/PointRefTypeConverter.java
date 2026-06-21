@@ -1,6 +1,7 @@
-package com.example.reportfrontapi.domain.point;
+package com.example.reportfrontapi.common.converter;
 
 import com.example.reportfrontapi.common.code.CodeEnum;
+import com.example.reportfrontapi.domain.point.model.PointRefType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

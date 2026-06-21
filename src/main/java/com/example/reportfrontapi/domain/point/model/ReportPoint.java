@@ -1,5 +1,8 @@
-package com.example.reportfrontapi.domain.point;
+package com.example.reportfrontapi.domain.point.model;
 
+import com.example.reportfrontapi.common.converter.PointAmountDivisionConverter;
+import com.example.reportfrontapi.common.converter.PointReasonConverter;
+import com.example.reportfrontapi.common.converter.PointRefTypeConverter;
 import com.example.reportfrontapi.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

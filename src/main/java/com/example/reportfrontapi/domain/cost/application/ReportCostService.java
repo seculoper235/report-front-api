@@ -6,8 +6,8 @@ import com.example.reportfrontapi.domain.cost.CostDivision;
 import com.example.reportfrontapi.domain.cost.ReportCost;
 import com.example.reportfrontapi.domain.cost.repository.CostCategoryRepository;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
-import com.example.reportfrontapi.domain.point.PointRefType;
-import com.example.reportfrontapi.domain.point.application.PointService;
+import com.example.reportfrontapi.domain.point.model.PointRefType;
+import com.example.reportfrontapi.domain.point.application.PointCreateService;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class ReportCostService {
     private final ReportCostRepository reportCostRepository;
     private final CostCategoryRepository costCategoryRepository;
-    private final PointService pointService;
+    private final PointCreateService pointService;
 
     @Transactional
     public ReportCostResponse create(ReportCostRequest request) {

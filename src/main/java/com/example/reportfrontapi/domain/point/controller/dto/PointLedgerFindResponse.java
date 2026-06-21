@@ -1,13 +1,13 @@
-package com.example.reportfrontapi.domain.point.application;
+package com.example.reportfrontapi.domain.point.controller.dto;
 
-import com.example.reportfrontapi.domain.point.PointAmountDivision;
-import com.example.reportfrontapi.domain.point.PointReason;
-import com.example.reportfrontapi.domain.point.PointRefType;
-import com.example.reportfrontapi.domain.point.ReportPoint;
+import com.example.reportfrontapi.domain.point.model.PointAmountDivision;
+import com.example.reportfrontapi.domain.point.model.PointReason;
+import com.example.reportfrontapi.domain.point.model.PointRefType;
+import com.example.reportfrontapi.domain.point.model.ReportPoint;
 
 import java.time.LocalDateTime;
 
-public record PointLedgerResponse(
+public record PointLedgerFindResponse(
         Long id,
         PointAmountDivision amountDivision,  // 적립/차감 (code 직렬화)
         Integer pointAmount,                 // 포인트 금액(양수 크기)
@@ -16,8 +16,8 @@ public record PointLedgerResponse(
         Long refId,
         LocalDateTime createdAt
 ) {
-    public static PointLedgerResponse from(ReportPoint point) {
-        return new PointLedgerResponse(
+    public static PointLedgerFindResponse from(ReportPoint point) {
+        return new PointLedgerFindResponse(
                 point.getReportPointId(),
                 point.getPointAmountDivision(),
                 point.getPointAmount(),

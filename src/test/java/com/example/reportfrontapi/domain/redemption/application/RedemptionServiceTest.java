@@ -4,7 +4,8 @@ import com.example.reportfrontapi.common.storage.StorageService;
 import com.example.reportfrontapi.domain.gift.model.GiftInventory;
 import com.example.reportfrontapi.domain.gift.model.GiftInventoryStatus;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
-import com.example.reportfrontapi.domain.point.application.PointService;
+import com.example.reportfrontapi.domain.point.application.PointCreateService;
+import com.example.reportfrontapi.domain.point.application.PointFindService;
 import com.example.reportfrontapi.domain.product.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
@@ -38,7 +39,8 @@ class RedemptionServiceTest {
     @Mock private ProductRepository productRepository;
     @Mock private GiftInventoryRepository giftInventoryRepository;
     @Mock private RedemptionOrderRepository redemptionOrderRepository;
-    @Mock private PointService pointService;
+    @Mock private PointFindService pointFindService;
+    @Mock private PointCreateService pointCreateService;
     @Mock private UserRepository userRepository;
     @Mock private StorageService storageService;
 
@@ -63,7 +65,7 @@ class RedemptionServiceTest {
         given(userRepository.findByIdForUpdate(1L)).willReturn(Optional.of(
                 User.builder().userId(1L).email("u@x.com").password("p").role(Role.USER).build()));
         given(productRepository.findActiveById(10L)).willReturn(Optional.of(product(100)));
-        given(pointService.getBalance(1L)).willReturn(150);
+        given(pointFindService.getBalance(1L)).willReturn(150);
         given(giftInventoryRepository.popAvailable(10L)).willReturn(Optional.of(
                 GiftInventory.of(10L, "GIFT-CODE-XYZ", null, null)));
         given(redemptionOrderRepository.save(ArgumentMatchers.any(RedemptionOrder.class)))
@@ -76,7 +78,7 @@ class RedemptionServiceTest {
         assertThat(response.status()).isEqualTo("ISSUED");
         assertThat(response.code()).isEqualTo("GIFT-CODE-XYZ");
         verify(redemptionOrderRepository).save(ArgumentMatchers.any(RedemptionOrder.class));
-        verify(pointService).recordRedeem(1L, 100, 5L);
+        verify(pointCreateService).recordRedeem(1L, 100, 5L);
     }
 
     @Test
@@ -101,14 +103,14 @@ class RedemptionServiceTest {
         given(userRepository.findByIdForUpdate(1L)).willReturn(Optional.of(
                 User.builder().userId(1L).email("u@x.com").password("p").role(Role.USER).build()));
         given(productRepository.findActiveById(10L)).willReturn(Optional.of(product(100)));
-        given(pointService.getBalance(1L)).willReturn(50);
+        given(pointFindService.getBalance(1L)).willReturn(50);
 
         assertThatThrownBy(() -> redemptionService.redeem(1L, 10L, "idem-1"))
                 .isInstanceOf(InsufficientPointException.class);
 
         verify(giftInventoryRepository, never()).popAvailable(ArgumentMatchers.anyLong());
         verify(redemptionOrderRepository, never()).save(ArgumentMatchers.any());
-        verify(pointService, never()).recordRedeem(ArgumentMatchers.anyLong(),
+        verify(pointCreateService, never()).recordRedeem(ArgumentMatchers.anyLong(),
                 ArgumentMatchers.anyInt(), ArgumentMatchers.anyLong());
     }
 
@@ -119,7 +121,7 @@ class RedemptionServiceTest {
         given(userRepository.findByIdForUpdate(1L)).willReturn(Optional.of(
                 User.builder().userId(1L).email("u@x.com").password("p").role(Role.USER).build()));
         given(productRepository.findActiveById(10L)).willReturn(Optional.of(product(100)));
-        given(pointService.getBalance(1L)).willReturn(150);
+        given(pointFindService.getBalance(1L)).willReturn(150);
         given(giftInventoryRepository.popAvailable(10L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> redemptionService.redeem(1L, 10L, "idem-1"))
@@ -136,7 +138,7 @@ class RedemptionServiceTest {
         given(userRepository.findByIdForUpdate(1L)).willReturn(Optional.of(
                 User.builder().userId(1L).email("u@x.com").password("p").role(Role.USER).build()));
         given(productRepository.findActiveById(10L)).willReturn(Optional.of(product(100)));
-        given(pointService.getBalance(1L)).willReturn(150);
+        given(pointFindService.getBalance(1L)).willReturn(150);
         given(giftInventoryRepository.popAvailable(10L)).willReturn(Optional.of(inventory));
         given(redemptionOrderRepository.save(ArgumentMatchers.any(RedemptionOrder.class)))
                 .willReturn(savedOrder());

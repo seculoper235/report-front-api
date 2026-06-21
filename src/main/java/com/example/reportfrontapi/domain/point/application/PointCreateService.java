@@ -1,35 +1,21 @@
 package com.example.reportfrontapi.domain.point.application;
 
-import com.example.reportfrontapi.domain.point.PointReason;
-import com.example.reportfrontapi.domain.point.PointRefType;
-import com.example.reportfrontapi.domain.point.ReportPoint;
+import com.example.reportfrontapi.domain.point.model.PointReason;
+import com.example.reportfrontapi.domain.point.model.PointRefType;
+import com.example.reportfrontapi.domain.point.model.ReportPoint;
 import com.example.reportfrontapi.domain.point.repository.ReportPointRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
- * 포인트 원장(report_point) 기반 잔액/적립/차감 처리. 단일 진실원.
- * 잔액 = 사용자별 delta 합계.
+ * 포인트 원장(report_point) 적립/차감/조정 기록. 단일 진실원.
  */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PointService {
+public class PointCreateService {
     private final ReportPointRepository reportPointRepository;
-
-    public int getBalance(Long userId) {
-        Integer sum = reportPointRepository.sumByUserId(userId);
-        return sum != null ? sum : 0;
-    }
-
-    public List<PointLedgerResponse> getLedger(Long userId) {
-        return reportPointRepository.findByUserId(userId).stream()
-                .map(PointLedgerResponse::from)
-                .toList();
-    }
 
     // 소비 등록 적립(0이면 기록 생략).
     @Transactional

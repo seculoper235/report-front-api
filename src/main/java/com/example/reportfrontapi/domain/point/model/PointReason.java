@@ -1,4 +1,4 @@
-package com.example.reportfrontapi.domain.point;
+package com.example.reportfrontapi.domain.point.model;
 
 import com.example.reportfrontapi.common.code.CodeEnum;
 import lombok.Getter;
