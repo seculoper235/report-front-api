@@ -107,6 +107,13 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return count != null ? count : 0L;
     }
 
+    // 해당 카테고리를 참조하는 소유자 소비가 하나라도 있는지 여부(카테고리 삭제 가드용).
+    public boolean existsByCategoryId(Long categoryId, Long userId) {
+        return selectFrom(cost)
+                .where(ownerEq(userId), cost.category.categoryId.eq(categoryId))
+                .fetchFirst() != null;
+    }
+
     // 소유자 전체 순포인트 합계 집계: GOOD은 +costPoint, BAD는 -costPoint (division/point가 null인 건 제외).
     // 집계 대상이 없으면 null을 반환하며, 기본값 처리는 Service에서 한다.
     public Integer sumNetPoint(Long userId) {

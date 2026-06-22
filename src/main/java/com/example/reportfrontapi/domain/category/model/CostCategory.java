@@ -21,4 +21,8 @@ public class CostCategory extends BaseEntity {
 
     @Column(name = "cat_nm", length = 20, nullable = false)
     private String categoryName;
+
+    public void rename(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }

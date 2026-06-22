@@ -35,4 +35,11 @@ public class CostCategoryRepository extends BaseRepository<CostCategory, Long> {
                 .orderBy(category.categoryId.asc())
                 .fetch();
     }
+
+    // 소유자(user_id)가 같은 이름의 카테고리를 이미 가지고 있는지 여부.
+    public boolean existsByNameAndOwner(String categoryName, Long userId) {
+        return selectFrom(category)
+                .where(category.userId.eq(userId), category.categoryName.eq(categoryName))
+                .fetchFirst() != null;
+    }
 }

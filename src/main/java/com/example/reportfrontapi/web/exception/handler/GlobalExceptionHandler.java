@@ -5,6 +5,8 @@ import com.example.reportfrontapi.common.response.ResponseCode;
 import com.example.reportfrontapi.domain.auth.DuplicateEmailException;
 import com.example.reportfrontapi.domain.auth.InvalidCredentialsException;
 import com.example.reportfrontapi.domain.auth.InvalidTokenException;
+import com.example.reportfrontapi.domain.category.CategoryInUseException;
+import com.example.reportfrontapi.domain.category.DuplicateCategoryException;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
 import com.example.reportfrontapi.domain.redemption.OutOfStockException;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,6 +45,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicateEmail(DuplicateEmailException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.of(ResponseCode.CONFLICT, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(DuplicateCategoryException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateCategory(DuplicateCategoryException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.of(ResponseCode.CONFLICT, e.getMessage(), null));
+    }
+
+    @ExceptionHandler(CategoryInUseException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCategoryInUse(CategoryInUseException e) {
         log.error(e.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
