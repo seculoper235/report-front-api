@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.cost.repository;
 
+import com.example.reportfrontapi.common.dto.Yn;
 import com.example.reportfrontapi.common.repository.BaseRepository;
 import com.example.reportfrontapi.domain.category.model.QCostCategory;
 import com.example.reportfrontapi.domain.cost.model.CostDivision;
@@ -49,6 +50,24 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                         .innerJoin(cost.category, category)
                         .where(cost.reportCostId.eq(id), ownerEq(userId))
                         .fetchOne());
+    }
+
+    // fixedYn=Y(고정 지출)이면서 지출 일시(paymentAt)의 '일(day)'이 dayOfMonth와 일치하는 소비 조회.
+    // 매일 자정 스케줄러가 당일 일자에 해당하는 고정 지출을 찾아 당월 소비로 등록하는 데 사용한다.
+    // 단, 당일이 그 달의 말일(lastDayOfMonth=true)이면 당월에 존재하지 않는 일자(예: 30/31일)의
+    // 고정 지출도 함께 말일로 보정해 등록한다.
+    // category를 innerJoin fetch로 함께 로딩한다.
+    public List<ReportCost> findFixedCostsForDay(int dayOfMonth, boolean lastDayOfMonth) {
+        BooleanExpression dayMatches = lastDayOfMonth
+                ? cost.paymentAt.dayOfMonth().goe(dayOfMonth)
+                : cost.paymentAt.dayOfMonth().eq(dayOfMonth);
+
+        return selectFrom(cost)
+                .innerJoin(cost.category, category).fetchJoin()
+                .where(
+                        cost.fixedYn.eq(Yn.Y),
+                        dayMatches)
+                .fetch();
     }
 
     // paymentAt이 [start, end) 범위에 드는 소유자 소비 조회. category를 innerJoin fetch로 함께 로딩.

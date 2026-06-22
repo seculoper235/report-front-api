@@ -107,6 +107,12 @@ spring:
 #    baseUrl: https://kapi.kakao.com
 #    adminKey: ${KAKAO_ADMIN_KEY}
 
+# 스케줄러 cron 설정 (Spring cron 표현식: 초 분 시 일 월 요일)
+scheduler:
+  # 고정 지출 자동 등록: 매일 자정 실행
+  fixed-cost:
+    cron: "0 0 0 * * *"
+
 # 서버 실행 관련(포트 등)
 server:
   compression:
