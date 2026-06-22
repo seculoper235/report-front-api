@@ -1,0 +1,31 @@
+## 운영 환경 설정 (SPRING_PROFILES_ACTIVE=prod)
+## DB/Redis/JWT 시크릿 등 민감 값은 기본값 없이 환경변수로 반드시 주입한다.
+spring:
+  devtools:
+    add-properties: false
+
+  # 운영 DB. 자격증명은 환경변수로만 주입(기본값 없음 → 누락 시 기동 실패).
+  datasource:
+    hikari:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${DB_HOST}:5432/daily?characterEncoding=utf-8
+      username: ${DB_USER}
+      password: ${DB_PASSWORD}
+
+  # 운영은 SQL 로그를 끈다.
+  jpa:
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+
+  # 운영 Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+jwt:
+  # 운영은 반드시 환경변수로 주입(기본값 없음).
+  secret: ${JWT_SECRET}

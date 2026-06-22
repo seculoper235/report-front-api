@@ -1,0 +1,35 @@
+## 로컬 개발 환경 설정 (SPRING_PROFILES_ACTIVE=local, 기본값)
+spring:
+  devtools:
+    add-properties: false
+
+  # 로컬 DB (docker-compose 로 기동). 미지정 시 localhost 기본값 사용.
+  datasource:
+    hikari:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${DB_HOST:localhost}:5432/daily?characterEncoding=utf-8
+      username: ${DB_USER:devteller}
+      password: ${DB_PASSWORD:devteller123!}
+
+  # 로컬은 SQL 로그를 켠다.
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+
+  # 로컬 인프라(DB/Redis)를 docker-compose 로 자동 기동
+  docker:
+    compose:
+      file: docker/docker-compose.yml
+
+  # 로컬 Redis (refresh 토큰 저장 / access 토큰 블랙리스트)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      password: ${REDIS_PASSWORD:}
+
+jwt:
+  # 로컬 전용 기본 시크릿. 운영에서는 환경변수로 반드시 교체된다.
+  secret: ${JWT_SECRET:myjwttestsecretkey-change-me-please-32bytes-minimum}

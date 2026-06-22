@@ -13,7 +13,7 @@ services:
     pull_policy: always
     restart: unless-stopped
     environment:
-      SPRING_PROFILES_ACTIVE: server
+      SPRING_PROFILES_ACTIVE: prod
       JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
       # 데이터 노드의 Tailscale IP (.env.prod 에서 주입)
       DB_HOST: ${DB_HOST}
