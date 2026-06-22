@@ -1,5 +1,6 @@
 package com.example.reportfrontapi.domain.category.application;
 
+import com.example.reportfrontapi.domain.category.CategoryColor;
 import com.example.reportfrontapi.domain.category.DuplicateCategoryException;
 import com.example.reportfrontapi.domain.category.controller.dto.CostCategoryCreateRequest;
 import com.example.reportfrontapi.domain.category.controller.dto.CostCategoryCreateResponse;
@@ -26,9 +27,12 @@ public class CostCategoryCreateService {
             throw new DuplicateCategoryException(request.categoryName());
         }
 
+        // 기존 색과 최대한 겹치지 않는 색을 부여한다.
+        String color = CategoryColor.randomAvoiding(costCategoryRepository.findColorsByOwner(userId));
         CostCategory category = CostCategory.builder()
                 .userId(userId)
                 .categoryName(request.categoryName())
+                .color(color)
                 .build();
 
         return CostCategoryCreateResponse.from(costCategoryRepository.save(category));

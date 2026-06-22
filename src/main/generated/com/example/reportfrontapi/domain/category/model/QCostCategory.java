@@ -28,6 +28,8 @@ public class QCostCategory extends EntityPathBase<CostCategory> {
 
     public final StringPath categoryName = createString("categoryName");
 
+    public final StringPath color = createString("color");
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 

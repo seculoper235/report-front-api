@@ -29,7 +29,8 @@ public class CostCategoryRepository extends BaseRepository<CostCategory, Long> {
 
     // 소유자(user_id)의 카테고리 목록을 id 오름차순으로 조회해 응답 DTO로 반환.
     public List<CostCategoryFindResponse> findAllByOwner(Long userId) {
-        return select(CostCategoryFindResponse.class, category.categoryId, category.categoryName)
+        return select(CostCategoryFindResponse.class,
+                category.categoryId, category.categoryName, category.color)
                 .from(category)
                 .where(category.userId.eq(userId))
                 .orderBy(category.categoryId.asc())
@@ -41,5 +42,13 @@ public class CostCategoryRepository extends BaseRepository<CostCategory, Long> {
         return selectFrom(category)
                 .where(category.userId.eq(userId), category.categoryName.eq(categoryName))
                 .fetchFirst() != null;
+    }
+
+    // 소유자(user_id)가 사용 중인 색상 목록(중복 회피용).
+    public List<String> findColorsByOwner(Long userId) {
+        return select(category.color)
+                .from(category)
+                .where(category.userId.eq(userId))
+                .fetch();
     }
 }

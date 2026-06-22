@@ -126,6 +126,7 @@ public class ReportCostFindService {
                 .map(group -> new CategoryCostFindResponse(
                         group.get(0).getCategory().getCategoryId(),
                         group.get(0).getCategory().getCategoryName(),
+                        group.get(0).getCategory().getColor(),
                         sumIncomeAmount(group),
                         sumExpenseAmount(group)))
                 .toList();

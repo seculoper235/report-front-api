@@ -22,6 +22,9 @@ public class CostCategory extends BaseEntity {
     @Column(name = "cat_nm", length = 20, nullable = false)
     private String categoryName;
 
+    @Column(name = "cat_color", length = 7, nullable = false)
+    private String color;    // 카테고리 색상 (#RRGGBB)
+
     public void rename(String categoryName) {
         this.categoryName = categoryName;
     }

@@ -6,6 +6,7 @@ package com.example.reportfrontapi.domain.category.controller.dto;
  */
 public record CostCategoryFindResponse(
         Long categoryId,       // 카테고리 ID
-        String categoryName    // 카테고리 이름
+        String categoryName,   // 카테고리 이름
+        String color           // 카테고리 색상 (#RRGGBB)
 ) {
 }

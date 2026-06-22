@@ -9,6 +9,7 @@ import java.math.BigInteger;
 public record CategoryCostFindResponse(
         Long categoryId,       // 카테고리 ID
         String categoryName,   // 카테고리 이름
+        String color,          // 카테고리 색상 (#RRGGBB)
         BigInteger incomeAmount,   // category별 입금금액 합산
         BigInteger expenseAmount   // category별 출금금액 합산
 ) {
