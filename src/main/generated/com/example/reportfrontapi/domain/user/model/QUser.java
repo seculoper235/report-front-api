@@ -24,6 +24,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final com.example.reportfrontapi.common.entity.QBaseEntity _super = new com.example.reportfrontapi.common.entity.QBaseEntity(this);
 
+    public final EnumPath<CostPersona> costPersona = createEnum("costPersona", CostPersona.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 

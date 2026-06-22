@@ -35,6 +35,24 @@ public class PointCreateService {
         record(userId, -pointCost, PointReason.REDEEM, PointRefType.REDEMPTION_ORDER, orderId);
     }
 
+    // 기프티콘 구매(현명한 소비) 적립(0이면 기록 생략).
+    @Transactional
+    public void recordRedeemEarn(Long userId, int amount, Long orderId) {
+        record(userId, amount, PointReason.EARN_REDEEM, PointRefType.REDEMPTION_ORDER, orderId);
+    }
+
+    // 매일 기본 포인트 적립(출처 없음).
+    @Transactional
+    public void recordDailyBase(Long userId, int amount) {
+        record(userId, amount, PointReason.DAILY_BASE, null, null);
+    }
+
+    // 연속 무(無)나쁜소비 보너스 적립(0이면 기록 생략, 출처 없음).
+    @Transactional
+    public void recordStreakBonus(Long userId, int amount) {
+        record(userId, amount, PointReason.DAILY_STREAK_BONUS, null, null);
+    }
+
     private void record(Long userId, int delta, PointReason reason, PointRefType refType, Long refId) {
         if (delta == 0) {
             return;

@@ -29,11 +29,19 @@ public class User extends BaseEntity {
     @Column(name = "role", length = 20, nullable = false)
     private Role role;  // 권한
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cost_persona", length = 20)
+    private CostPersona costPersona;  // 소비 페르소나(첫 로그인 시 선택, null=미선택)
+
     public static User of(String email, String encodedPassword) {
         return User.builder()
                 .email(email)
                 .password(encodedPassword)
                 .role(Role.USER)
                 .build();
+    }
+
+    public void changePersona(CostPersona costPersona) {
+        this.costPersona = costPersona;
     }
 }

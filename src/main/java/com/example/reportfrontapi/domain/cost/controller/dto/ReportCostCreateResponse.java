@@ -23,7 +23,8 @@ public record ReportCostCreateResponse(
         CostDivision costDivision,   // 소비 유형
         Integer costPoint            // 소비 포인트(부호 없는 원본 값)
 ) {
-    public static ReportCostCreateResponse from(ReportCost cost) {
+    // 포인트(부호 없는 크기)는 CostPoint에서 계산된 값을 받아 채운다.
+    public static ReportCostCreateResponse from(ReportCost cost, int costPoint) {
         return new ReportCostCreateResponse(
                 cost.getReportCostId(),
                 cost.getCategory().getCategoryId(),
@@ -36,7 +37,7 @@ public record ReportCostCreateResponse(
                 cost.getPaymentMethod(),
                 cost.getPaymentAt(),
                 cost.getCostDivision(),
-                cost.getCostPoint()
+                costPoint
         );
     }
 }

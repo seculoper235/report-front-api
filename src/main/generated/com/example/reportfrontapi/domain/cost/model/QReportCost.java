@@ -39,8 +39,6 @@ public class QReportCost extends EntityPathBase<ReportCost> {
 
     public final StringPath costName = createString("costName");
 
-    public final NumberPath<Integer> costPoint = createNumber("costPoint", Integer.class);
-
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 

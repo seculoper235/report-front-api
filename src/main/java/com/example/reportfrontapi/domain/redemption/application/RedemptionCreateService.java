@@ -5,6 +5,7 @@ import com.example.reportfrontapi.domain.gift.model.GiftInventory;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
 import com.example.reportfrontapi.domain.point.application.PointCreateService;
 import com.example.reportfrontapi.domain.point.application.PointFindService;
+import com.example.reportfrontapi.domain.point.policy.PointPolicyProperties;
 import com.example.reportfrontapi.domain.product.model.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
@@ -30,6 +31,7 @@ public class RedemptionCreateService {
     private final PointCreateService pointCreateService;
     private final UserRepository userRepository;
     private final StorageService storageService;
+    private final PointPolicyProperties pointPolicyProperties;
 
     // 교환 처리: 멱등 체크 → 잔액 잠금/검증 → 재고 코드 pop → 차감 주문 생성. (정책 a: 재고 0이면 차감 없이 실패)
     @Transactional
@@ -66,6 +68,10 @@ public class RedemptionCreateService {
 
         // 7. 원장에 차감 기록
         pointCreateService.recordRedeem(userId, product.getPointCost(), order.getRedemptionOrderId());
+
+        // 8. 현명한 소비 적립: 교환 포인트 가격의 일정 비율(기본 1%)을 되돌려준다.
+        int earn = (int) Math.round(product.getPointCost() * pointPolicyProperties.redeem().rate());
+        pointCreateService.recordRedeemEarn(userId, earn, order.getRedemptionOrderId());
 
         return responseOf(order, product, inventory);
     }

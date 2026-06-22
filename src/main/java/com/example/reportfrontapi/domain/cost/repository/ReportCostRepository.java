@@ -4,6 +4,7 @@ import com.example.reportfrontapi.common.dto.Yn;
 import com.example.reportfrontapi.common.repository.BaseRepository;
 import com.example.reportfrontapi.domain.category.model.QCostCategory;
 import com.example.reportfrontapi.domain.cost.model.CostDivision;
+import com.example.reportfrontapi.domain.cost.model.QCostPoint;
 import com.example.reportfrontapi.domain.cost.model.QReportCost;
 import com.example.reportfrontapi.domain.cost.model.ReportCost;
 import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostFindResponse;
@@ -11,8 +12,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +28,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
 
     private static final QReportCost cost = QReportCost.reportCost;
     private static final QCostCategory category = QCostCategory.costCategory;
+    private static final QCostPoint costPoint = QCostPoint.costPoint;
 
     public ReportCostRepository(EntityManager em) {
         super(ReportCost.class, em);
@@ -48,6 +48,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 select(ReportCostFindResponse.class, reportCostProjection())
                         .from(cost)
                         .innerJoin(cost.category, category)
+                        .leftJoin(costPoint).on(costPoint.reportCostId.eq(cost.reportCostId))
                         .where(cost.reportCostId.eq(id), ownerEq(userId))
                         .fetchOne());
     }
@@ -86,6 +87,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return select(ReportCostFindResponse.class, reportCostProjection())
                 .from(cost)
                 .innerJoin(cost.category, category)
+                .leftJoin(costPoint).on(costPoint.reportCostId.eq(cost.reportCostId))
                 .where(ownerEq(userId), category.categoryId.eq(categoryId))
                 .fetch();
     }
@@ -99,6 +101,7 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return select(ReportCostFindResponse.class, reportCostProjection())
                 .from(cost)
                 .innerJoin(cost.category, category)
+                .leftJoin(costPoint).on(costPoint.reportCostId.eq(cost.reportCostId))
                 .where(
                         hasCostDivision(),
                         ownerEq(userId),
@@ -126,6 +129,44 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
         return count != null ? count : 0L;
     }
 
+    // 당일(paymentAt 기준) BAD 소비 개수. 소과금러 개수 성분 계산용.
+    // excludeCostId가 주어지면(수정 시 자기 자신) 그 건은 집계에서 제외한다.
+    public long countBadByDay(Long userId, LocalDateTime dayStart, LocalDateTime dayEnd, Long excludeCostId) {
+        Long count = select(cost.count())
+                .from(cost)
+                .where(
+                        ownerEq(userId),
+                        cost.costDivision.eq(CostDivision.BAD),
+                        cost.paymentAt.goe(dayStart),
+                        cost.paymentAt.lt(dayEnd),
+                        costIdNeq(excludeCostId))
+                .fetchOne();
+
+        return count != null ? count : 0L;
+    }
+
+    // 특정 카테고리(배달 주문)의 BAD 소비 개수를 [start, end) 범위로 집계. 배달러 빈도 성분 계산용.
+    // excludeCostId가 주어지면(수정 시 자기 자신) 그 건은 집계에서 제외한다.
+    public long countBadByCategoryAndRange(Long userId, Long categoryId,
+                                           LocalDateTime start, LocalDateTime end, Long excludeCostId) {
+        Long count = select(cost.count())
+                .from(cost)
+                .where(
+                        ownerEq(userId),
+                        cost.category.categoryId.eq(categoryId),
+                        cost.costDivision.eq(CostDivision.BAD),
+                        cost.paymentAt.goe(start),
+                        cost.paymentAt.lt(end),
+                        costIdNeq(excludeCostId))
+                .fetchOne();
+
+        return count != null ? count : 0L;
+    }
+
+    private BooleanExpression costIdNeq(Long excludeCostId) {
+        return excludeCostId != null ? cost.reportCostId.ne(excludeCostId) : null;
+    }
+
     // 해당 카테고리를 참조하는 소유자 소비가 하나라도 있는지 여부(카테고리 삭제 가드용).
     public boolean existsByCategoryId(Long categoryId, Long userId) {
         return selectFrom(cost)
@@ -133,24 +174,8 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 .fetchFirst() != null;
     }
 
-    // 소유자 전체 순포인트 합계 집계: GOOD은 +costPoint, BAD는 -costPoint (division/point가 null인 건 제외).
-    // 집계 대상이 없으면 null을 반환하며, 기본값 처리는 Service에서 한다.
-    public Integer sumNetPoint(Long userId) {
-        NumberExpression<Integer> netPoint = new CaseBuilder()
-                .when(cost.costDivision.eq(CostDivision.GOOD)).then(cost.costPoint)
-                .otherwise(cost.costPoint.negate());
-
-        return select(netPoint.sumAggregate())
-                .from(cost)
-                .where(
-                        hasCostDivision(),
-                        ownerEq(userId),
-                        cost.costDivision.isNotNull(),
-                        cost.costPoint.isNotNull())
-                .fetchOne();
-    }
-
-    // ReportCostFindResponse 생성자 순서에 맞춘 프로젝션. categoryId/categoryName은 innerJoin한 category에서 가져온다.
+    // ReportCostFindResponse 생성자 순서에 맞춘 프로젝션. categoryId/categoryName은 innerJoin한 category에서,
+    // costPoint(부호 없는 크기)는 leftJoin한 CostPoint에서 가져온다(없으면 0).
     private Expression<?>[] reportCostProjection() {
         return new Expression<?>[]{
                 cost.reportCostId,
@@ -164,15 +189,8 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
                 cost.paymentMethod,
                 cost.paymentAt,
                 cost.costDivision,
-                costPointOrZero()
+                costPoint.pointAmount.coalesce(0)
         };
-    }
-
-    // 소비유형/포인트가 없으면 0. 엔티티 getCostPoint()와 동일한 정규화.
-    private NumberExpression<Integer> costPointOrZero() {
-        return new CaseBuilder()
-                .when(cost.costDivision.isNull().or(cost.costPoint.isNull())).then(0)
-                .otherwise(cost.costPoint);
     }
 
     private BooleanExpression hasCostDivision() {
@@ -197,13 +215,18 @@ public class ReportCostRepository extends BaseRepository<ReportCost, Long> {
     }
 
     // Pageable의 Sort를 QueryDSL OrderSpecifier로 변환. 정렬 가능 필드: paymentAt / costPoint / costAmount
+    // costPoint는 ReportCost가 아닌 leftJoin한 CostPoint(pointAmount)로 정렬한다.
     private OrderSpecifier<?>[] toOrderSpecifiers(Sort sort) {
         PathBuilder<ReportCost> path = new PathBuilder<>(ReportCost.class, cost.getMetadata());
 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         for (Sort.Order order : sort) {
             Order direction = order.isAscending() ? Order.ASC : Order.DESC;
-            orders.add(new OrderSpecifier<>(direction, path.getComparable(order.getProperty(), Comparable.class)));
+            if ("costPoint".equals(order.getProperty())) {
+                orders.add(new OrderSpecifier<>(direction, costPoint.pointAmount));
+            } else {
+                orders.add(new OrderSpecifier<>(direction, path.getComparable(order.getProperty(), Comparable.class)));
+            }
         }
         return orders.toArray(new OrderSpecifier[0]);
     }

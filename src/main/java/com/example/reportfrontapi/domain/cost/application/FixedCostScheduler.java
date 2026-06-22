@@ -82,7 +82,8 @@ public class FixedCostScheduler {
                 fixedCost.getPaymentMethod(),
                 paymentAt,
                 fixedCost.getCostDivision(),
-                fixedCost.getCostPoint()
+                // 포인트는 서버가 다시 계산한다(GOOD 지정값은 없음). 고정 지출은 소비 유형이 없어 통상 0이다.
+                null
         );
     }
 

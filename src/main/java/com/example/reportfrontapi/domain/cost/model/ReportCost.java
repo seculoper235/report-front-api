@@ -58,22 +58,7 @@ public class ReportCost extends BaseEntity {
     @Column(name = "cost_dvsn", length = 8)
     private CostDivision costDivision;    // 소비 유형
 
-    @Column(name = "cost_pnt")
-    private Integer costPoint;    // 소비 포인트
-
-    public Integer getCostPoint() {
-        if (costDivision == null || costPoint == null) {
-            return 0;
-        }
-        return costPoint;
-    }
-
-    public Integer getNormalCostPoint() {
-        if (costDivision == null || costPoint == null) {
-            return 0;
-        }
-        return CostDivision.GOOD.equals(costDivision) ? costPoint : costPoint * -1;
-    }
+    // 포인트는 CostPoint 테이블이 단일 진실원이다(이 엔티티에는 더 이상 저장하지 않는다).
 
     // 입금(INCREASE) 건의 금액(아니면 0). 입금금액 합산에 사용.
     public BigInteger getIncomeAmount() {
@@ -93,7 +78,7 @@ public class ReportCost extends BaseEntity {
 
     public void update(CostCategory category, String costName, Yn fixedYn, String costDescription,
                        CostAmountDivision amountDivision, BigInteger costAmount, PaymentMethod paymentMethod,
-                       LocalDateTime paymentAt, CostDivision costDivision, Integer costPoint) {
+                       LocalDateTime paymentAt, CostDivision costDivision) {
         this.category = category;
         this.costName = costName;
         this.fixedYn = fixedYn;
@@ -103,6 +88,5 @@ public class ReportCost extends BaseEntity {
         this.paymentMethod = paymentMethod;
         this.paymentAt = paymentAt;
         this.costDivision = costDivision;
-        this.costPoint = costPoint;
     }
 }

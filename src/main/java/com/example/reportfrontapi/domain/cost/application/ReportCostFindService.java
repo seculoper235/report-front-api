@@ -7,6 +7,7 @@ import com.example.reportfrontapi.domain.cost.controller.dto.ReportCostFindRespo
 import com.example.reportfrontapi.domain.cost.controller.dto.WeeklyCostFindResponse;
 import com.example.reportfrontapi.domain.cost.model.CostDivision;
 import com.example.reportfrontapi.domain.cost.model.ReportCost;
+import com.example.reportfrontapi.domain.cost.repository.CostPointRepository;
 import com.example.reportfrontapi.domain.cost.repository.ReportCostRepository;
 import com.example.reportfrontapi.web.security.SecurityUtil;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ReportCostFindService {
     private final ReportCostRepository reportCostRepository;
+    private final CostPointRepository costPointRepository;
 
     public List<ReportCostFindResponse> findAll(Long categoryId) {
         return reportCostRepository.findByCategoryId(categoryId, SecurityUtil.getRequiredCurrentUserId());
@@ -56,7 +58,7 @@ public class ReportCostFindService {
 
     // 전체 순포인트 합계(GOOD +, BAD -). 메인 화면 헤더에 표시. 집계 대상이 없으면 0.
     public int getTotalPoint() {
-        Integer netPoint = reportCostRepository.sumNetPoint(SecurityUtil.getRequiredCurrentUserId());
+        Integer netPoint = costPointRepository.sumNetPoint(SecurityUtil.getRequiredCurrentUserId());
         return netPoint != null ? netPoint : 0;
     }
 

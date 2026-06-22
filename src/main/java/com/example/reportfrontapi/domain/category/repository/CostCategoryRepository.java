@@ -44,6 +44,15 @@ public class CostCategoryRepository extends BaseRepository<CostCategory, Long> {
                 .fetchFirst() != null;
     }
 
+    // 소유자(user_id)의 이름이 일치하는 카테고리 ID(배달 주문 카테고리 조회용). 없으면 empty.
+    public Optional<Long> findIdByNameAndOwner(String categoryName, Long userId) {
+        return Optional.ofNullable(
+                select(category.categoryId)
+                        .from(category)
+                        .where(category.userId.eq(userId), category.categoryName.eq(categoryName))
+                        .fetchFirst());
+    }
+
     // 소유자(user_id)가 사용 중인 색상 목록(중복 회피용).
     public List<String> findColorsByOwner(Long userId) {
         return select(category.color)

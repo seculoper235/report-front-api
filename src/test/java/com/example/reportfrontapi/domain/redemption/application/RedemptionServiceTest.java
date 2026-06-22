@@ -6,6 +6,7 @@ import com.example.reportfrontapi.domain.gift.model.GiftInventoryStatus;
 import com.example.reportfrontapi.domain.gift.repository.GiftInventoryRepository;
 import com.example.reportfrontapi.domain.point.application.PointCreateService;
 import com.example.reportfrontapi.domain.point.application.PointFindService;
+import com.example.reportfrontapi.domain.point.policy.PointPolicyProperties;
 import com.example.reportfrontapi.domain.product.model.Product;
 import com.example.reportfrontapi.domain.product.repository.ProductRepository;
 import com.example.reportfrontapi.domain.redemption.InsufficientPointException;
@@ -43,9 +44,15 @@ class RedemptionServiceTest {
     @Mock private PointCreateService pointCreateService;
     @Mock private UserRepository userRepository;
     @Mock private StorageService storageService;
+    @Mock private PointPolicyProperties pointPolicyProperties;
 
     @InjectMocks
     private RedemptionCreateService redemptionService;
+
+    // 교환 적립 비율(1%) 스텁. 차감 이후 적립 단계에서만 사용된다.
+    private void givenRedeemRate(double rate) {
+        given(pointPolicyProperties.redeem()).willReturn(new PointPolicyProperties.Redeem(rate));
+    }
 
     private Product product(int pointCost) {
         return Product.builder().productId(10L).name("스타벅스").pointCost(pointCost).active(true).build();
@@ -70,6 +77,7 @@ class RedemptionServiceTest {
                 GiftInventory.of(10L, "GIFT-CODE-XYZ", null, null)));
         given(redemptionOrderRepository.save(ArgumentMatchers.any(RedemptionOrder.class)))
                 .willReturn(savedOrder());
+        givenRedeemRate(0.01);
 
         RedemptionCreateResponse response = redemptionService.redeem(1L, 10L, "idem-1");
 
@@ -79,6 +87,8 @@ class RedemptionServiceTest {
         assertThat(response.code()).isEqualTo("GIFT-CODE-XYZ");
         verify(redemptionOrderRepository).save(ArgumentMatchers.any(RedemptionOrder.class));
         verify(pointCreateService).recordRedeem(1L, 100, 5L);
+        // 1% 적립: 100 → 1점
+        verify(pointCreateService).recordRedeemEarn(1L, 1, 5L);
     }
 
     @Test
@@ -142,6 +152,7 @@ class RedemptionServiceTest {
         given(giftInventoryRepository.popAvailable(10L)).willReturn(Optional.of(inventory));
         given(redemptionOrderRepository.save(ArgumentMatchers.any(RedemptionOrder.class)))
                 .willReturn(savedOrder());
+        givenRedeemRate(0.01);
 
         redemptionService.redeem(1L, 10L, "idem-1");
 

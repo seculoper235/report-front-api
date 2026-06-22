@@ -529,3 +529,82 @@ databaseChangeLog:
             columnName: cat_color
             columnDataType: varchar(7)
             defaultNullValue: '#9B70D0'
+  - changeSet:
+      id: create-cost-point
+      author: DevTeller
+      changes:
+        # 소비 1건의 계산된 포인트(서버 소유·파생). ReportCost와 1:1.
+        - createTable:
+            tableName: rpt_cost_point
+            columns:
+              - column:
+                  name: rpt_cost_point_id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rpt_cost_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost_dvsn
+                  type: varchar(8)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost_pnt
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: persona
+                  type: varchar(20)
+              - column: { name: crt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: crt_by, type: bigint, constraints: { nullable: false } }
+              - column: { name: udt_at, type: datetime, defaultValue: "${function.now}", constraints: { nullable: false } }
+              - column: { name: udt_by, type: bigint, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: rpt_cost_point
+            columnNames: rpt_cost_id
+            constraintName: uk_cost_point_cost
+        - createIndex:
+            tableName: rpt_cost_point
+            indexName: idx_cost_point_user
+            columns:
+              - column:
+                  name: user_id
+        # 기존 소비(소비유형+포인트 보유 건)를 CostPoint로 backfill. persona는 과거값을 알 수 없어 null.
+        - sql:
+            dbms: postgresql, h2
+            sql: >-
+              INSERT INTO "rpt_cost_point" ("user_id", "rpt_cost_id", "cost_dvsn", "cost_pnt", "crt_at", "crt_by", "udt_at", "udt_by")
+              SELECT "user_id", "rpt_cost_id", "cost_dvsn", "cost_pnt", now(), "user_id", now(), "user_id"
+              FROM "rpt_cost"
+              WHERE "cost_dvsn" IS NOT NULL AND "cost_pnt" IS NOT NULL;
+  - changeSet:
+      id: add-user-cost-persona
+      author: DevTeller
+      changes:
+        # 소비 페르소나(DELIVERY/MICRO_SPENDER/JACKPOT). 기존 사용자는 null=미선택.
+        - addColumn:
+            tableName: rpt_user
+            columns:
+              - column:
+                  name: cost_persona
+                  type: varchar(20)
+  - changeSet:
+      id: drop-cost-pnt
+      author: DevTeller
+      changes:
+        # 포인트는 CostPoint(rpt_cost_point)가 단일 진실원. create-cost-point에서 backfill 완료 후 제거.
+        - dropColumn:
+            tableName: rpt_cost
+            columnName: cost_pnt
